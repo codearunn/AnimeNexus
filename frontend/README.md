@@ -1,16 +1,143 @@
-# React + Vite
+# AnimeNexus Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for AnimeNexus anime tracking platform.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# Install dependencies
+npm install
 
-## React Compiler
+# Start development server
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Visit: `http://localhost:5173`
 
-## Expanding the ESLint configuration
+## 📁 Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+frontend/
+├── src/
+│   ├── components/      # Reusable UI components
+│   │   ├── Header.jsx
+│   │   ├── Footer.jsx
+│   │   ├── AnimeCard.jsx
+│   │   └── ...
+│   ├── pages/           # Full page components
+│   │   ├── Home.jsx
+│   │   ├── Browse.jsx
+│   │   ├── Library.jsx
+│   │   └── Profile.jsx
+│   ├── utils/           # Helper functions
+│   │   ├── api.js       # API calls
+│   │   └── auth.js      # Auth helpers
+│   ├── assets/          # Images, fonts, etc.
+│   ├── App.jsx          # Main app component
+│   ├── main.jsx         # Entry point
+│   └── index.css        # Global styles
+├── public/              # Static files
+│   └── images/
+│       └── logo.png
+└── index.html           # HTML template
+```
+
+## 🎨 Tech Stack
+
+- **React 19** - UI library
+- **Vite** - Build tool
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **React Router** - Routing
+- **Axios** - HTTP client
+
+## 🎨 Theme
+
+Red & Black color scheme:
+- Primary: Black (`#000000`)
+- Accent: Red (`#DC2626`, `#EF4444`)
+- Text: White on dark backgrounds
+
+## 🛠️ Development
+
+```bash
+# Start dev server with hot reload
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
+```
+
+## 📦 Key Dependencies
+
+- `react` & `react-dom` - Core React
+- `react-router-dom` - Client-side routing
+- `axios` - HTTP requests
+- `framer-motion` - Animations
+- `tailwindcss` - Utility-first CSS
+
+## 🎯 Features
+
+- Responsive design (mobile-first)
+- Dark theme with red accents
+- Smooth animations
+- Fast page loads with Vite
+- Component-based architecture
+
+## 📝 Component Guidelines
+
+### Components vs Pages
+- **Components**: Reusable UI pieces (Header, Button, Card)
+- **Pages**: Full page views (Home, Browse, Profile)
+
+### Naming Conventions
+- PascalCase for components: `AnimeCard.jsx`
+- camelCase for utilities: `apiClient.js`
+- kebab-case for CSS classes
+
+### Styling
+- Use Tailwind utility classes
+- Keep components self-contained
+- Follow mobile-first approach
+- Use consistent spacing scale
+
+## 🔗 API Integration
+
+API base URL: `http://localhost:5000/api`
+
+Configure in `src/utils/api.js`:
+```javascript
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+```
+
+## 🚀 Deployment
+
+```bash
+# Build for production
+npm run build
+
+# Deploy dist/ folder to:
+# - Netlify
+# - Vercel
+# - GitHub Pages
+```
+
+## 📱 Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## 🎓 Learning Resources
+
+- [React Docs](https://react.dev)
+- [Vite Guide](https://vitejs.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Framer Motion](https://www.framer.com/motion)

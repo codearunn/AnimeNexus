@@ -1,19 +1,8 @@
-require('dotenv').config();
-const express = require("express");
-const cors = require('cors');
+const app = require("./src/app");
+const PORT= process.env.PORT || 8001;
 
-const app = express();
-const PORT= process.env.PORT||8000;
-
-//MIDDLEWARES
-app.use(cors());
-app.use(express.json());
-
-
-
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Backend server is running!' });
-});
-
-
-app.listen(PORT, () => console.log(`Server Started at PORT:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server Started at PORT:${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  }
+);
