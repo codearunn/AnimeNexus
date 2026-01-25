@@ -3,7 +3,7 @@ const ErrorResponse = require("../utils/errorResponse");
 // 4 parameters ==> Error Handler
 const errorHandler = async (err, req, res, next) => {
   //Creates copy so original err isn’t mutated.
-  const error = {...err};
+  let error = {...err};
   error.message= err.message;
 
   console.error(err); // Logs full stack trace.
