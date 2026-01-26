@@ -1,15 +1,30 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Header() {
+  const {user, logout} = useAuth();
+
   return (
     <header className="w-full bg-black h-16 text-white shadow-xl border-b-2 border-red-600">
       <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
         <img src="/images/logo.png" className=" w-11 h-11 rounded-full"/>
         <h1 className="ml-2 text-4xl font-extrabold ">Anime<span className="text-red-600">Nexus</span></h1>
         <nav className="ml-auto hidden md:flex space-x-8">
-          <a href="#" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Home</a>
-          <a href="#" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Browse</a>
-          <a href="#" className="text-white  hover:text-red-500 font-extrabold text-lg transition-colors duration-200">My Library</a>
-          <a href="#" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Profile</a>
+          <Link to="/" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Home</Link>
+          {user ? (
+            <>
+              <Link to="/Browse" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Browse</Link>
+              <Link to="/MyLibrary" className="text-white  hover:text-red-500 font-extrabold text-lg transition-colors duration-200">My Library</Link>
+              <Link to="/Profile" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Profile</Link>
+              <button onClick={logout} className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Logout</button>
+            </>
+          ):(
+            <>
+              <Link to="/login" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Login</Link>
+              <Link to="/register" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Create Account</Link>
+            </>
+          )}
+
         </nav>
 
         {/* Mobile menu button */}

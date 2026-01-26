@@ -36,12 +36,11 @@ async function handelUserRegistration(req, res, next) {
 
     const token = generateToken(user._id);
 
-    res.cookie("token", token,{
-        httpOnly:true,
-        secure: process.env.NODE_ENV=== "production",
-        sameSite:"strict",
-      }
-    );
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false // ✅ Must be false for localhost
+    });
     return res.status(201).json({
       status:true,
       message:"User registered successfully",
@@ -76,12 +75,12 @@ async function handelUserLogin(req, res, next) {
 
     const token = generateToken(user._id);
 
-    res.cookie("token", token,{
-        httpOnly:true,
-        secure: process.env.NODE_ENV=== "production",
-        sameSite:"strict",
-      }
-    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false
+    });
     return res.status(200).json({
       status:true,
       message:"User LoggedIn successfully",
