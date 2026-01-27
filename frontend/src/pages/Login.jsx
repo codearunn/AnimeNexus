@@ -29,10 +29,11 @@ function Login() {
 
     setFormError("");
     await login({ email, password });
+    localStorage.setItem(user.token);
   }
 
   return (
-    <div className="min-h-cal[screen-10rem] bg-black flex item-center justify-center px-4">
+    <div className="min-h-cal[100vh-10rem] bg-black flex item-center justify-center px-4">
       <form onSubmit={handelLogin}
         className="max-w-md  w-full max-auto mt-10 p-8 bg-gray-900 rounded-2xl shadow-xl mb-32"
       >

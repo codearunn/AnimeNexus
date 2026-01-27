@@ -1,3 +1,5 @@
+import Loading from "../components/Loading";
+
 function Home() {
   return (
     <div className="min-h-screen text-white bg-gradient-to-br from-black to-red-900">

@@ -2,7 +2,7 @@ const User = require("../models/User");
 const generateToken= require("../utils/generateToken");
 const ErrorResponse = require("../utils/errorResponse");
 
-async function handelUserRegistration(req, res, next) {
+async function handleUserRegistration(req, res, next) {
   try {
     const {userName, email , password} = req.body;
 
@@ -48,7 +48,8 @@ async function handelUserRegistration(req, res, next) {
         id: user._id,
         userName: user.userName,
         email: user.email,
-      }
+      },
+      token:token,
     })
   } catch (error) {
     next(error);
@@ -56,7 +57,7 @@ async function handelUserRegistration(req, res, next) {
 };
 
 // 404 => resource not found and 401=> Auth failure
-async function handelUserLogin(req, res, next) {
+async function handleUserLogin(req, res, next) {
   try {
     const {email, password} = req.body;
     if(!email || !password){
@@ -88,14 +89,15 @@ async function handelUserLogin(req, res, next) {
         id: user._id,
         userName: user.userName,
         email: user.email,
-      }
+      },
+      token:token,
     })
   } catch (error) {
     next(error);
   }
 };
 
-async function handelUserGetMe(req, res, next) {
+async function handleUserGetMe(req, res, next) {
   try {
     const user = await User.findById(req.user._id).select("-password");
     if (!user) {
@@ -109,10 +111,24 @@ async function handelUserGetMe(req, res, next) {
   } catch (error) {
     next(error);
   }
+};
+
+async function handleUserLogout(req, res, next) {
+  try {
+    res.clearCookie("token");
+    return res.status(200).json({
+      status: true,
+      message: "Logged out successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
+
 module.exports ={
-  handelUserRegistration,
-  handelUserLogin,
-  handelUserGetMe,
+  handleUserRegistration,
+  handleUserLogin,
+  handleUserGetMe,
+  handleUserLogout
 }

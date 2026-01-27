@@ -38,10 +38,11 @@ function Register() {
 
     setFormError("");
     register({userName, email, password});
+    localStorage.setItem(user.token);
   }
 
   return (
-    <div className="min-h-cal[screen-4rem] bg-black flex item-center justify-center px-4">
+    <div className="min-h-cal[100vh-10rem] bg-black flex item-center justify-center px-4">
       <form
         onSubmit={handleRegister}
         className="max-w-md max-auto bg-gray-900 rounded-2xl mt-10 mb-24 shadow-xl p-8"
@@ -105,7 +106,7 @@ function Register() {
               />
             </svg>
           ) : (
-            "Singup"
+            "Signup"
           )}
         </button>
 

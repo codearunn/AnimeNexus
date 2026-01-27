@@ -6,6 +6,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/axios";
+import toast from "react-hot-toast";
 
 const AuthContext = createContext(); //Creates shared memory for auth.
 
@@ -20,9 +21,9 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await api.post("/auth/register", data);
       setUser(res.data.user);
+      toast.success("Account created successfully!");
     } catch (error) {
-      const errorMessage = error?.error || error?.message || "Something went wrong";
-      setError(errorMessage);
+      toast.error(error || "Something went wrong");
       console.error("Auth Error:", error);  // ✅ Add logging for debugging
     } finally {
       setLoading(false);
@@ -34,17 +35,28 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const res = await api.post("/auth/login", data);
       setUser(res.data.user);
+      toast.success("LoggedIn successfully!");
     } catch (error) {
-      const errorMessage = error?.error || error?.message || "Something went wrong";
-      setError(errorMessage);
+      toast.error(error || "Something went wrong");
       console.error("Auth Error:", error);  // ✅ Add logging for debugging
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    try {
+      setLoading(true);
+      await api.post("/auth/logout"); // when called will clear the cookie
+      localStorage.removeItem("token");
+      setUser(null);
+      toast.success("Logged out!");
+    } catch (error) {
+      toast.error(error || "Something went wrong");
+      console.error("Auth Error:", error);  // ✅ Add logging for debugging
+    } finally{
+      setLoading(false);
+    }
   };
 
   // Keeps user logged in after refresh. ==> Persistent login.

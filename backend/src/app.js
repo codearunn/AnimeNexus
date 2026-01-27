@@ -5,8 +5,10 @@ const app = express();
 
 //Imports
 const cookieParser= require("cookie-parser");
-const authRoute = require("./routes/auth");
 const errorHandler = require("./middleware/errorHandler");
+
+const authRoute = require("./routes/auth");
+const animeRoute = require("./routes/anime");
 
 //DB connection
 const connectDB = require("./config/db");
@@ -22,7 +24,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
+//Routes
 app.use('/api/auth',authRoute);
+app.use('/api/anime', animeRoute);
+
 
 // 404 Handler
 app.use((req, res) => {
