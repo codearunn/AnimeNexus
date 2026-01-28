@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useAuth } from "./context/AuthContext";
 import Loading from "./components/Loading";
+import AnimeCard from "./components/AnimeCard";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/Profile" element={<Profile/>}/>
           <Route path="/login" element={<Login/>}/>
           <Route path="/register" element={<Register/>}/>
+          <Route path="/card" element={<AnimeCard/>}/>
         </Routes>
       </main>
       <Footer/>

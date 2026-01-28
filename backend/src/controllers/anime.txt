@@ -1,0 +1,24 @@
+1. searchAnime(){}
+Goal
+
+Let users:
+✔ search by title
+✔ filter by genre
+✔ filter by status
+✔ filter by year
+✔ paginate
+✔ combine everything
+example: ?q=naruto&genre=Action&page=2
+          q = "naruto"
+          genre = "Action"
+          page = "2"
+          limit = undefined → default 20
+
+Hints:
+Use req.query.q for search term
+Use req.query.genre for genre filter
+MongoDB regex pattern: { field: { $regex: value, $options: "i" } }
+For genre filtering: { genres: { $in: [genre] } }
+Don't forget to handle empty/undefined parameters
+Calculate skip: (page - 1) * limit
+Use Anime.countDocuments(query) for total count
