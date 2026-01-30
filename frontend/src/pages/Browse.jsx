@@ -41,7 +41,7 @@ function Browse() {
       if(selectedGenre) params.append("genre", selectedGenre);
       if(selectedStatus) params.append("status", selectedStatus);
       params.append("page", page);
-      params.append("limit", 12);
+      params.append("limit", 10);
 
       const res = await api.get(`/anime/search?${params.toString()}`);
       const data = res.data;
@@ -124,14 +124,13 @@ function Browse() {
                 ))}
               </div>
             )}
-
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
+              <div className="flex justify-center items-center gap-4 mt-8 m-auto">
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="px-6 py-3 bg-gray-800 text-white rounded-lg
+                  className="px-6 py-3 bg-red-800 text-white rounded-lg
                              hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed
                              transition-colors"
                 >

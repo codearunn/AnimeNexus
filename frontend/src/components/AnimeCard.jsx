@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom"
+import {useAuth} from "../context/AuthContext";
+import {useState, useEffect } from "react";
 
 function AnimeCard({ anime }) {
+  const {user} = useAuth();
+  // const [status, setStatus] = useState("");
+
   return (
     <Link
       to={`/anime/${anime._id}`}
@@ -51,6 +56,17 @@ function AnimeCard({ anime }) {
             <span className="p-2">{anime.year}</span>
           </div>
         </div>
+        {user && (
+        <div className="flex">
+          <button
+            className="bg-red-500/60 w-full p-auto rounded-xl p-1 shadow-md hover:shadow-red-500 font-bold"
+            // onClick={handleAddtoList}
+          > Add to List</button>
+          <select>
+            <option value="">status</option>
+          </select>
+        </div>
+        )}
       </div>
     </Link>
   );

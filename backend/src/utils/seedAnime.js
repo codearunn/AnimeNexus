@@ -170,7 +170,7 @@ const animeData = [
     status: "completed",
     genres: ["Horror", "Dark Fantasy", "Action", "Psychological"],
     images: {
-      poster: "https://cdn.myanimelist.net/images/anime/5/64435.jpg"
+     poster: "https://cdn.myanimelist.net/images/anime/5/64449.jpg"
     },
     rating: {
       average: 7.8,
@@ -214,13 +214,143 @@ const animeData = [
     status: "airing",
     genres: ["Action", "Supernatural", "Fantasy"],
     images: {
-      poster: "https://cdn.myanimelist.net/images/anime/1171/1172405.jpg"
+      poster: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg"
     },
     rating: {
       average: 8.8,
       count: 230000
     },
     year: 2020,
+    studio: "MAPPA",
+    source: "manga"
+  },
+  {
+    title: { english: "Sword Art Online" },
+    synopsis: "Players of a VR MMORPG find themselves trapped in the game where dying in-game means real death, and must clear all 100 floors to escape.",
+    episodes: 25,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Adventure","Fantasy","Game"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/11/39717.jpg" },
+    rating: { average: 7.6, count: 180000 },
+    year: 2012,
+    studio: "A-1 Pictures",
+    source: "novel"
+  },
+  {
+    title: { english: "Steins;Gate" },
+    synopsis: "A self-proclaimed mad scientist and his friends accidentally invent time travel and must deal with the terrifying consequences of changing the past.",
+    episodes: 24,
+    duration: 24,
+    status: "completed",
+    genres: ["Sci-Fi","Thriller","Drama"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/5/73199.jpg" },
+    rating: { average: 9.1, count: 620000 },
+    year: 2011,
+    studio: "White Fox",
+    source: "manga"
+  },
+  {
+    title: { english: "Hunter x Hunter (2011)" },
+    synopsis: "A boy named Gon embarks on a journey to become a Hunter like his father and teams up with friends to face powerful foes and forgotten dangers.",
+    episodes: 148,
+    duration: 23,
+    status: "completed",
+    genres: ["Action","Adventure","Fantasy"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/1337/99013.jpg" },
+    rating: { average: 9.0, count: 810000 },
+    year: 2011,
+    studio: "Madhouse",
+    source: "manga"
+  },
+  {
+    title: { english: "Cowboy Bebop" },
+    synopsis: "In the year 2071, a group of bounty hunters known as Cowboys ride the sky in search of criminals and confront their pasts in a jazzy cosmic noir adventure.",
+    episodes: 26,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Sci-Fi","Space"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/4/19644.jpg" },
+    rating: { average: 8.9, count: 450000 },
+    year: 1998,
+    studio: "Sunrise",
+    source: "original"
+  },
+  {
+    title: { english: "Bleach" },
+    synopsis: "Ichigo Kurosaki becomes a Soul Reaper and battles evil spirits known as Hollows while protecting the living and the balance between worlds.",
+    episodes: 366,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Supernatural","Shounen"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/3/40451.jpg" },
+    rating: { average: 7.9, count: 420000 },
+    year: 2004,
+    studio: "Studio Pierrot",
+    source: "manga"
+  },
+  {
+    title: { english: "Naruto Shippuden" },
+    synopsis: "Naruto returns after training and joins his friends to face dangerous enemies, uncover secrets of the ninja world, and protect his best friend Sasuke.",
+    episodes: 500,
+    duration: 23,
+    status: "completed",
+    genres: ["Action","Adventure","Fantasy"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/5/17407.jpg" },
+    rating: { average: 8.2, count: 680000 },
+    year: 2007,
+    studio: "Pierrot",
+    source: "manga"
+  },
+  {
+    title: { english: "Code Geass: Lelouch of the Rebellion" },
+    synopsis: "Exiled prince Lelouch gains the power of Geass and leads a rebellion against the Holy Britannian Empire to change the world and save his sister.",
+    episodes: 25,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Mecha","Drama"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/4/9391.jpg" },
+    rating: { average: 8.7, count: 500000 },
+    year: 2006,
+    studio: "Sunrise",
+    source: "original"
+  },
+  {
+    title: { english: "Mob Psycho 100" },
+    synopsis: "A powerful middle school psychic tries to live a normal life and control his abilities while dealing with spirits and personal growth.",
+    episodes: 25,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Comedy","Supernatural"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/10/78745.jpg" },
+    rating: { average: 8.5, count: 350000 },
+    year: 2016,
+    studio: "Bones",
+    source: "manga"
+  },
+  {
+    title: { english: "Vinland Saga" },
+    synopsis: "Thorfinn seeks revenge on the man who killed his father and becomes entangled in the brutal Viking age of warfare, honor, and survival.",
+    episodes: 24,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Adventure","Drama","Historical"],
+    images: {poster: "https://cdn.myanimelist.net/images/anime/1500/103005.jpg" },
+    rating: { average: 8.8, count: 460000 },
+    year: 2019,
+    studio: "Wit Studio",
+    source: "manga"
+  },
+  {
+    title: { english: "Chainsaw Man" },
+    synopsis: "Denji hunts devils with his pet devil Pochita while trying to survive, protect those he cares about, and uncover the mysteries of his world.",
+    episodes: 12,
+    duration: 24,
+    status: "completed",
+    genres: ["Action","Supernatural","Horror"],
+    images: { poster: "https://cdn.myanimelist.net/images/anime/1806/126216.jpg"},
+    rating: { average: 8.4, count: 470000 },
+    year: 2022,
     studio: "MAPPA",
     source: "manga"
   }

@@ -9,6 +9,7 @@ const errorHandler = require("./middleware/errorHandler");
 
 const authRoute = require("./routes/auth");
 const animeRoute = require("./routes/anime");
+const userAnimeRoute = require("./routes/userAnime");
 
 //DB connection
 const connectDB = require("./config/db");
@@ -27,6 +28,7 @@ app.use(cookieParser());
 //Routes
 app.use('/api/auth',authRoute);
 app.use('/api/anime', animeRoute);
+app.use('/api/user-anime', userAnimeRoute);
 
 
 // 404 Handler
