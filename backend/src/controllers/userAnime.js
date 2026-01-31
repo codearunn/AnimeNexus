@@ -11,23 +11,23 @@ const createUserAnime = async (req, res, next) => {
     if(!validAnime){
       throw new ErrorResponse("Anime not found", 404);
     }
-    const animeExists = await UserAnime.findOne({userId, animeId});
-    if(animeExists){
+    const animeExistsinList = await UserAnime.findOne({userId, animeId});
+    if(animeExistsinList){
       throw new ErrorResponse("Already exists in you List", 409);
     }
 
-    const addedAnime = await UserAnime.create({
+    const addAnime = await UserAnime.create({
       userId,
       animeId,
       status,
       currentEpisode,
     });
     // Populate replaces referenced ObjectIds with actual documents so frontend receives complete related data in one API call.
-    await addedAnime.populate("animeId",'title images episodes');
+    await addAnime.populate("animeId",'title images episodes');
 
     return res.status(201).json({
       status:true,
-      data:addedAnime,
+      data:addAnime,
     })
 
   } catch (error) {
@@ -45,14 +45,14 @@ const getUseranime = async (req, res, next) => {
     if(status){
       query.status= status;
     }
-    const allUserAnime = await UserAnime.find(query)
+    const userAnime = await UserAnime.find(query)
                         .populate("animeId")
                         .sort({updatedAt:-1}); //most recently updated first
 
     return res.status(200).json({
       status:true,
-      count: allUserAnime.length,
-      data:allUserAnime,
+      count: userAnime.length,
+      data:userAnime,
     })
 
   } catch (error) {
@@ -62,7 +62,7 @@ const getUseranime = async (req, res, next) => {
 
 const updateUserAnime= async (req, res, next) => {
   try {
-    const entryId= req.params.id;
+    const entryId= req.params.id; // the _id of the UserAnime document
     const updates = req.body;
 
     const entry = await UserAnime.findById(entryId);
@@ -75,6 +75,7 @@ const updateUserAnime= async (req, res, next) => {
 
     await entry.populate("animeId");
 
+    // when currentEpisode is actually provided, allowing partial updates without breaking logic.
     if(updates.currentEpisode!==undefined && updates.currentEpisode> entry.animeId.episodes
     ){
       throw new ErrorResponse("Episode exceeds total episodes", 400);
@@ -107,9 +108,9 @@ const deleteUserAnime= async (req, res, next) => {
 
     await UserAnime.findByIdAndDelete(entryId);
 
-    return res.status(204).json({ //204 = Deleted successfully (no content)
+    return res.status(200).json({ //204 = Deleted successfully (no content) but by using this you won't see json message so use 200
       status:true,
-      message: `Removed from list`
+      message: "Removed from list",
     });
 
   } catch (error) {

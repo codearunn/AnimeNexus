@@ -1,26 +1,50 @@
 import { Link } from "react-router-dom"
-import {useAuth} from "../context/AuthContext";
-import {useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import api from "../api/axios";
+import toast from "react-hot-toast";
 
+const STATUSES = [
+  "watching",
+  "completed",
+  "plan-to-watch",
+  "on-hold",
+  "dropped",
+]
 function AnimeCard({ anime }) {
-  const {user} = useAuth();
-  // const [status, setStatus] = useState("");
 
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const handleAddToList = async (status) => {
+    try {
+      await api.post("/user-anime", {
+        animeId: anime._id,
+        status: status,
+        currentEpisode: 0,
+      });
+      toast.success("Added to list!");
+      setOpen(false);
+    } catch (error) {
+      toast.error(error?.error || "Already in list");
+    }
+  }
   return (
-    <Link
-      to={`/anime/${anime._id}`}
+    <div
       className="group block bg-black rounded-lg overflow-hidden
       hover:shadow-2xl hover:shadow-red-600/50 transition-all duration-300
       transform hover:-translate-y-2"
     >
+
       {/* Poster */}
       <div className="relative aspect-[2/3] overflow-hidden">
-        <img
-          src={anime.images.poster}
-          alt={anime.title.english}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-        />
-
+        <Link to={`/anime/${anime._id}`}>
+          <img
+            src={anime.images.poster}
+            alt={anime.title.english}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+        </Link>
         {/* Rating */}
         <div className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-full font-bold text-sm">
           ⭐ {anime.rating.average.toFixed(1)}
@@ -57,18 +81,48 @@ function AnimeCard({ anime }) {
           </div>
         </div>
         {user && (
-        <div className="flex">
-          <button
-            className="bg-red-500/60 w-full p-auto rounded-xl p-1 shadow-md hover:shadow-red-500 font-bold"
-            // onClick={handleAddtoList}
-          > Add to List</button>
-          <select>
-            <option value="">status</option>
-          </select>
-        </div>
+          <div className="relative">
+            <button
+              onClick={() => setOpen(true)}
+              className="w-full bg-red-800/70 hover:bg-red-700 text-white
+                         py-1 rounded-2xl font-bold transition shadow-md hover:shadow-red-900 "
+            >
+              Add to List
+            </button>
+            {/* MODAL */}
+            {open && (
+              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+
+                <div className="bg-gray-900 rounded-xl p-6 w-80 border border-gray-700">
+
+                  <h2 className="text-white text-lg font-bold mb-4 text-center">
+                    Add to your list
+                  </h2>
+
+                  {STATUSES.map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleAddToList(status)}
+                      className="w-full mb-2 py-2 bg-gray-800 hover:bg-red-600
+                           text-white rounded transition capitalize"
+                    >
+                      {status.replace("-", " ")}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="mt-3 w-full py-2 text-gray-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
 
