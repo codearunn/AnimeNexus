@@ -1,52 +1,76 @@
-const Anime = require("../models/Anime");
+const UserAnime = require("../models/UserAnime");
 const ErrorResponse = require("../utils/errorResponse");
+const {jikan, delay, transformAnime} = require("../services/jikan");
 
+
+/*
+ * Genre name → Jikan ID mapping
+ * (add more later)
+ */
+const GENRE_MAP = {
+  Action: 1,
+  Adventure: 2,
+  Comedy: 4,
+  Drama: 8,
+  Fantasy: 10,
+  Horror: 14,
+  Romance: 22,
+  "Sci-Fi": 24,
+  Thriller: 41
+};
+
+/**
+ * Frontend status → Jikan status
+ */
+const STATUS_MAP = {
+  watching: "airing",
+  completed: "complete",
+  "plan-to-watch": "upcoming"
+};
 
 const getAllAnime = async (req, res, next) => {
   try {
-    // ?page=2&limit=5
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
+    const limit = Math.min(parseInt(req.query.limit) || 20,25); // Jikan max 25
 
-    const total = await Anime.countDocuments();
+    await delay(350);
 
-    // skip → ignore first N
-    // limit → take next N
-    const allAnimes = await Anime.find({})
-      .select("title synopsis episodes status genres images rating year")
-      .sort({ "rating.average": -1 }) //// Sort by rating, highest first
-      .skip(skip)
-      .limit(limit);
+    const response = await jikan.get("/top/anime",{
+      params:{
+        page,
+        limit,
+      }
+    });
+    const anime = response.data.data.map(transformAnime);
 
-    res.status(200).json({
-      status: true,
-      count: allAnimes.length,
-      total: total,
-      page: page,
-      pages: Math.ceil(total / limit),
-      data: allAnimes,
+    return res.status(200).json({
+      status:true,
+      count:anime.length,
+      pagination: response.data.pagination,
+      data:anime,
     });
   } catch (error) {
+    console.error("Jikan getAllAnime error:", error);
     next(error);
   }
 }
 
 const getAnimeById = async (req, res, next) => {
   try {
-    const anime = await Anime.findById(req.params.id);
-    if (!anime) {
-      throw new ErrorResponse("Anime not Found", 404);
-    }
+    const id = req.params.id;
+    await delay(350);
 
+    const response = await jikan.get(`/anime/${id}`);
+    const anime = transformAnime(response.data.data);
     return res.status(200).json({
-      status: true,
-      data: anime,
+      status:true,
+      data:anime,
     })
   } catch (error) {
-    // Handle invalid MongoDB ObjectId
-    if (error.name === "CastError") {
-      return next(new ErrorResponse("Invalid anime ID format", 400));
+    console.error("Jikan getAnimeById error:", error);
+
+    if (error.response?.status === 404) {
+      return next(new ErrorResponse("Anime not found", 404));
     }
     next(error);
   }
@@ -54,65 +78,120 @@ const getAnimeById = async (req, res, next) => {
 
 const searchAnime = async (req, res, next) => {
   try {
-
-
     const { q, genre, status, year, page = 1, limit = 20 } = req.query; // page=1 & limit=20 are default values
+    await delay(350);
 
-    let query = {}; //build query here
+    const genreId = GENRE_MAP[genre];
+    const jikanStatus = STATUS_MAP[status];
+    const startDate= year? `${year}-01-01`: undefined;
 
-    if (q) {
-      query["title.english"] = {
-        $regex: q,  // regular expression match (finds all title matching ex: for nar => naruto, narina, naruto shippuden)
-        $options: "i", // case-insensitive
-      };
-    }
-
-    if (genre) {
-      query.genres = { $in: [genre] } //Match if array contains this value. (genres: ["Action", "Fantasy"])
-    }
-
-    if (status) {
-      query.status = status;
-    }
-
-    if (year) {
-      query.year = parseInt(year);
-    }
-
-    const pageNum = Math.max(parseInt(page), 1);
-    const pageLimit = Math.max(parseInt(limit), 1);
-    const skip = (pageNum - 1) * pageLimit ;
-    const total = await Anime.countDocuments(query); // count all matching with query
-
-    const Animes = await Anime.find(query)
-      .select("title synopsis episode duration status genres images rating year")
-      .sort({ "rating.average": -1 })
-      .skip(skip)
-      .limit(pageLimit);
+    const response = await jikan.get("/anime",{
+      params:{
+        q,
+        page,
+        limit,
+        order_by:"score",
+        sort:"desc",
+        genres:genreId,
+        status:jikanStatus,
+        start_date:startDate,
+      }
+    });
+    const animes = response.data.data.map(transformAnime);
 
     return res.status(200).json({
-      status: true,
-      count: Animes.length,
-      total: total,
-      page: page,
-      pages: Math.ceil(total / pageLimit),
-      data: Animes,
-    })
+      status:true,
+      count:animes.length,
+      pagination: response.data.pagination,
+      data:animes,
+    });
   } catch (error) {
-    next(error);
+    console.error("Jikan searchAnime error:", error);
+    next(new ErrorResponse("Failed to search anime", 500));
   }
 };
  //Get list of all available genres for dropdown
 const getAllGenres = async (req, res, next) => {
   try {
-    const genres = await Anime.distinct("genres");
+    await delay(350);
+
+    const response = await jikan.get("/genres/anime");
+
+    const genres = response.data.data.map(g => ({
+      id: g.mal_id,
+      name: g.name
+    }));
+
+    return res.status(200).json({
+      status: true,
+      count: genres.length,
+      data: genres
+    });
+
+  } catch (error) {
+    console.error("Get genres error:", error);
+    next(error);
+  }
+};
+
+const getAnimeDetails = async (req, res, next) => {
+  try {
+    const animeId= Number(req.params.id);
+
+    await delay(350);
+
+    const response = await jikan.get(`/anime/${animeId}`);
+    if(!response.data?.data){
+      throw new ErrorResponse("Anime not Found", 404);
+    }
+    const anime = transformAnime(response.data.data);
+
+    let usersWithThisAnime = await UserAnime.find({animeId:animeId})
+    const usersWithThisAnimeCount=usersWithThisAnime.length;
+
+    const watching =  usersWithThisAnime.filter(a => a.status==="watching").length;
+    const completed =  usersWithThisAnime.filter(a => a.status==="completed").length;
+    const planTowatch =  usersWithThisAnime.filter(a => a.status==="plan-to-watch").length;
+    const onHold =  usersWithThisAnime.filter(a => a.status==="on-hold").length;
+    const dropped =  usersWithThisAnime.filter(a => a.status==="dropped").length;
+
+
+    const usersRated= usersWithThisAnime.filter(anime => anime.rating!==undefined);
+    const ratedSum = usersRated.reduce((sum,anime) => sum+anime.rating,0);
+    const avgUserRating= usersRated.length===0? 0 : (ratedSum/usersRated.length).toFixed(1);
+
+    // Personal user stats (OPTIONAL)
+    let userStats=null;
+    if(req.user){
+      const userAnime= await UserAnime.findOne({userId:req.user._id, animeId});
+      if(userAnime){
+        userStats={
+          status:userAnime.status,
+          rating:userAnime.rating,
+          progress:userAnime.currentEpisode,
+        };
+      }
+    }
 
     return res.status(200).json({
       status:true,
-      count: genres.length,
-      data: genres.sort(),
-    })
+      anime: anime,
+      stats:{
+        totalMembers:usersWithThisAnimeCount,
+        statusBreakDown:{
+          watching,
+          completed,
+          planTowatch,
+          onHold,
+          dropped,
+        },
+        averageUserRating:avgUserRating,
+        userStats,
+      }
+    });
+
   } catch (error) {
+    console.error("Anime details error:", error);
     next(error);
   }
 }
@@ -121,5 +200,6 @@ module.exports = {
   getAllAnime,
   getAnimeById,
   searchAnime,
-  getAllGenres
+  getAllGenres,
+  getAnimeDetails
 }

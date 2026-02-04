@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:"http://localhost:8000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
   withCredentials: true, // IMPORTANT for cookies
   headers:{
     "Content-type":"application/json", // It tells Express how to parse the request body.

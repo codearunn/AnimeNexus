@@ -49,7 +49,7 @@ function Browse() {
       setAnime(data.data);
       setTotalPages(data.pages);
     } catch (error) {
-      console.log("Error in fetchAnime:", error);
+      console.error("Error in fetchAnime:", error);
     } finally {
       setBrowseLoading(false);
     }
@@ -60,10 +60,9 @@ function Browse() {
       setBrowseLoading(true);
       const res = await api.get("/anime/genres");
       const data = res.data;
-      console.log("genres", data);
       setGenres(data.data);
     } catch (error) {
-      console.log("Error in fetchGenres", error);
+      console.error("Error in fetchGenres:", error);
     } finally {
       setBrowseLoading(false);
     }

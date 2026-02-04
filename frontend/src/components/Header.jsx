@@ -13,7 +13,7 @@ function Header() {
         <img src="/images/logo.png" className=" w-11 h-11 rounded-full"/>
         <h1 className="ml-2 text-4xl font-extrabold ">Anime<span className="text-red-600">Nexus</span></h1>
         </Link>
-        <nav className="ml-auto hidden md:flex space-x-8">
+        <nav className="ml-auto flex space-x-8">
           <Link to="/" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Home</Link>
           {user ? (
             <LoggedIn/>
@@ -21,15 +21,6 @@ function Header() {
             <LoggedOut/>
           )}
         </nav>
-
-        {/* Mobile menu button */}
-          <div className="ml-auto md:hidden">
-            <button className="text-white hover:text-red-500">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
       </div>
     </header>
   )

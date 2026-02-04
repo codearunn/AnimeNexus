@@ -29,7 +29,7 @@ function Login() {
 
     setFormError("");
     await login({ email, password });
-    localStorage.setItem(user.token);
+    // Token is stored in httpOnly cookie by backend - no need for localStorage
   }
 
   return (

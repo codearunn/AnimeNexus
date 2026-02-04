@@ -32,13 +32,13 @@ function Register() {
     if(!emailRegEx.test(email)){
       return setFormError("Invalid email format");
     }
-    if(password.length<6){
-      return setFormError("Password must be at least 6 characters long");
+    if(password.length<8){
+      return setFormError("Password must be at least 8 characters long");
     }
 
     setFormError("");
     register({userName, email, password});
-    localStorage.setItem(user.token);
+    // Token is stored in httpOnly cookie by backend
   }
 
   return (

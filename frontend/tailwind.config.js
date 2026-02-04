@@ -5,7 +5,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        heading: ["Bebas Neue", "sans-serif","Orbitron"],
+        body: ["Inter", "sans-serif","Poppins"],
+        cyber: ["Orbitron", "sans-serif"],
+      }
+    },
   },
   plugins: [],
 }

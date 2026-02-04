@@ -4,8 +4,14 @@ import api from "../api/axios";
 import Rating from "../components/Rating";
 
 function LibraryCard({ anime, onUpdate }) {
+  // Safety check: if animeId is null, don't render the card
+  if (!anime.animeId) {
+    console.error("LibraryCard: animeId is null for anime:", anime._id);
+    return null;
+  }
+
   const current = anime.currentEpisode;
-  const total = anime.animeId.episodes;
+  const total = anime.animeCache.episodes;
 
   const progress = Math.round((current / total) * 100);
 
@@ -50,10 +56,10 @@ function LibraryCard({ anime, onUpdate }) {
 
       {/* Poster */}
       <div className="relative aspect-[2/3] overflow-hidden">
-        <Link to={`/anime/${anime.animeId._id}`}>
+        <Link to={`/anime/${anime.animeId}`}>
           <img
-            src={anime.animeId.images.poster}
-            alt={anime.animeId.title.english}
+            src={anime.animeCache.poster}
+            alt={anime.animeCache.title.english}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         </Link>
@@ -71,7 +77,7 @@ function LibraryCard({ anime, onUpdate }) {
 
         {/* Title */}
         <h3 className="text-white font-bold text-2xl line-clamp-2 border-b border-red-900 group-hover:text-red-500 transition">
-          {anime.animeId.title.english}
+          {anime.animeCache.title.english}
         </h3>
 
         {/* Episode info */}

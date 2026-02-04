@@ -19,12 +19,14 @@ export const AuthProvider = ({ children }) => {
   const register = async (data) => { // data is  the form values coming from your Register page.
     try {
       setLoading(true);
+      setError(null);
       const res = await api.post("/auth/register", data);
       setUser(res.data.user);
       toast.success("Account created successfully!");
     } catch (error) {
-      toast.error(error || "Something went wrong");
-      console.error("Auth Error:", error);  // ✅ Add logging for debugging
+      const errorMessage = error?.error || error?.message || "Registration failed";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -33,12 +35,14 @@ export const AuthProvider = ({ children }) => {
   const login = async (data) => {
     try {
       setLoading(true);
+      setError(null);
       const res = await api.post("/auth/login", data);
       setUser(res.data.user);
       toast.success("LoggedIn successfully!");
     } catch (error) {
-      toast.error(error || "Something went wrong");
-      console.error("Auth Error:", error);  // ✅ Add logging for debugging
+      const errorMessage = error?.error || error?.message || "Login failed";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,12 +52,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await api.post("/auth/logout"); // when called will clear the cookie
-      localStorage.removeItem("token");
       setUser(null);
       toast.success("Logged out!");
     } catch (error) {
-      toast.error(error || "Something went wrong");
-      console.error("Auth Error:", error);  // ✅ Add logging for debugging
+      const errorMessage = error?.error || error?.message || "Logout failed";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally{
       setLoading(false);
     }
@@ -68,10 +72,10 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await api.get("/auth/me");
-       console.log("ME RESPONSE:", res.data);
       setUser(res.data.user);
     } catch (error) {
-      setError(null);
+      // Don't set error on initial auth check - user just not logged in
+      setUser(null);
     } finally {
       setLoading(false);
     }

@@ -1,126 +1,143 @@
 const UserAnime = require("../models/UserAnime");
-const Anime = require("../models/Anime");
 const ErrorResponse = require("../utils/errorResponse");
+const {jikan, delay, transformAnime} = require("../services/jikan");
 
+// POST /api/user-anime
 const createUserAnime = async (req, res, next) => {
   try {
-    const {animeId, status, currentEpisode} = req.body;
+
+    const { animeId, status= "plan-to-watch", currentEpisode=0 } = req.body;
     const userId = req.user._id;
 
-    const validAnime = await Anime.findById(animeId);
-    if(!validAnime){
-      throw new ErrorResponse("Anime not found", 404);
+    if (!animeId) throw new ErrorResponse("Anime ID required", 400);
+
+    const exists = await UserAnime.findOne({ userId, animeId });
+
+    if (exists) {
+      throw new ErrorResponse("Already in your list", 409); //duplicates
     }
-    const animeExistsinList = await UserAnime.findOne({userId, animeId});
-    if(animeExistsinList){
-      throw new ErrorResponse("Already exists in you List", 409);
-    }
+    await delay(350);
+    const response = await jikan.get(`/anime/${animeId}`);
+    const anime = transformAnime(response.data.data);
 
     const addAnime = await UserAnime.create({
       userId,
       animeId,
       status,
       currentEpisode,
+
+      animeCache: {
+        title: anime.title.english,
+        poster: anime.images.poster,
+        episodes: anime.episodes,
+        updatedAt: new Date()
+      }
     });
-    // Populate replaces referenced ObjectIds with actual documents so frontend receives complete related data in one API call.
-    await addAnime.populate("animeId",'title images episodes');
 
     return res.status(201).json({
-      status:true,
-      data:addAnime,
-    })
+      status: true,
+      data: addAnime
+    });
 
   } catch (error) {
     next(error);
   }
 };
 
+// GET /api/user-anime
 const getUseranime = async (req, res, next) => {
   try {
-    const userId= req.user._id;
+    const userId = req.user._id;
 
-    const {status} = req.query;
+    let query = { userId };
 
-    let query={userId};
-    if(status){
-      query.status= status;
-    }
-    const userAnime = await UserAnime.find(query)
-                        .populate("animeId")
-                        .sort({updatedAt:-1}); //most recently updated first
+    if (req.query.status) query.status = req.query.status;
 
-    return res.status(200).json({
-      status:true,
-      count: userAnime.length,
-      data:userAnime,
-    })
+    const list = await UserAnime.find(query).sort({ updatedAt: -1 });
+
+    return res.json({
+      status: true,
+      count: list.length,
+      data: list
+    });
 
   } catch (error) {
     next(error);
   }
 };
 
-const updateUserAnime= async (req, res, next) => {
+// PUT /api/user-anime/:id
+const updateUserAnime = async (req, res, next) => {
   try {
-    const entryId= req.params.id; // the _id of the UserAnime document
+    const entryId = req.params.id;
     const updates = req.body;
 
     const entry = await UserAnime.findById(entryId);
-    if(!entry) throw new ErrorResponse("Entry not found", 404);
 
-    // checking Ownership
-    if(entry.userId.toString()!== req.user._id.toString()){
-      throw new ErrorResponse("Not Authorized", 401);
+    if (!entry) throw new ErrorResponse("Entry not found", 404);
+
+    if (entry.userId.toString() !== req.user._id.toString()) {
+      throw new ErrorResponse("Not authorized", 401);
     }
 
-    await entry.populate("animeId");
-
-    // when currentEpisode is actually provided, allowing partial updates without breaking logic.
-    if(updates.currentEpisode!==undefined && updates.currentEpisode> entry.animeId.episodes
+    if(
+      updates.currentEpisode !== undefined &&
+      (updates.currentEpisode < 0 ||
+      updates.currentEpisode > entry.animeCache.episodes)
     ){
-      throw new ErrorResponse("Episode exceeds total episodes", 400);
+      throw new ErrorResponse("Invalid episode number", 400);
     }
 
-    const updatedEntry= await UserAnime.findByIdAndUpdate(
+    // Rating bounds (optional)
+    if (
+      updates.rating !== undefined &&
+      (updates.rating < 0 || updates.rating > 10)
+    ) {
+      throw new ErrorResponse("Rating must be between 0 and 10", 400);
+    }
+
+    const updated = await UserAnime.findByIdAndUpdate(
       entryId,
       updates,
-      {new:true} // Without: Mongo returns OLD document && With:Mongo returns UPDATED document.Frontend needs updated.
-    ).populate("animeId", "title images episodes");
-    return res.status(200).json({
-      status:true,
-      data: updatedEntry,
+      { new: true } // without this mongo will return old entry
+    );
+
+    return res.json({
+      status: true,
+      data: updated
     });
+
   } catch (error) {
     next(error);
   }
 };
 
-const deleteUserAnime= async (req, res, next) => {
+// DELETE /api/user-anime/:id
+const deleteUserAnime = async (req, res, next) => {
   try {
-    const entryId= req.params.id;
+    const entry = await UserAnime.findById(req.params.id);
 
-    const entry= await UserAnime.findById(entryId);
-    if(!entry) throw new ErrorResponse("Entry not Found", 404);
+    if (!entry) throw new ErrorResponse("Entry not found", 404);
 
-    if(entry.userId.toString()!==req.user._id.toString()){
-      throw new ErrorResponse("Not Authorized!", 401);
+    if (entry.userId.toString() !== req.user._id.toString()) {
+      throw new ErrorResponse("Not authorized", 401);
     }
 
-    await UserAnime.findByIdAndDelete(entryId);
+    await entry.deleteOne();
 
-    return res.status(200).json({ //204 = Deleted successfully (no content) but by using this you won't see json message so use 200
-      status:true,
-      message: "Removed from list",
+    return res.json({
+      status: true,
+      message: "Removed from list"
     });
 
   } catch (error) {
     next(error);
   }
-}
+};
 
-module.exports= {
+module.exports = {
   createUserAnime,
   getUseranime,
   updateUserAnime,
   deleteUserAnime
-}
+};

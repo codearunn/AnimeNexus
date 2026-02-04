@@ -31,6 +31,7 @@ function StatusTab({userAnime, activeTab, setActiveTab}) {
           </button>
         )
       })}
+
     </div>
   )
 }

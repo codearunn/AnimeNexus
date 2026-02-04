@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import StatusTab from '../components/StatusTab';
 import SortDropDown from '../components/SortDropDown';
 import StatsDashboard from '../components/StatsDashboard';
+import EmptyState from '../components/EmptyState';
 
 
 function MyLibrary() {
@@ -31,8 +32,10 @@ function MyLibrary() {
     const completedAnime = userAnimeList.filter(anime => anime.status ==="completed").length;
     const completionRate = totalAnime===0?0: Math.round((completedAnime/totalAnime)*100);
 
-    const flatternAllGeners = userAnimeList.map(anime =>
-                                            anime.animeId.genres).flat();
+    const flatternAllGeners = userAnimeList
+      .filter(anime => anime.animeId)  // Filter out null animeId to prevent crashes
+      .map(anime => anime.animeId.genres)
+      .flat();
     const countGenres= {};
     flatternAllGeners.forEach(genre => {
       countGenres[genre]= (countGenres[genre]||0)+1;
@@ -66,14 +69,17 @@ function MyLibrary() {
       const res = await api.get("/user-anime");
       setUserAnimeList(res.data.data);
     } catch (error) {
-      console.log("Error in fetchUserAnime:", error);
+      console.error("Error in fetchUserAnime:", error);
       toast.error("Failed to load library");
     } finally{
       setLoading(false);
     }
   };
 
-  const filteredAnimeByStatus = userAnimeList.filter(anime => anime.status === activeTab);
+  // Filter by status AND ensure animeId exists
+  const filteredAnimeByStatus = userAnimeList.filter(anime => 
+    anime.status === activeTab && anime.animeId
+  );
 
   const sortedAnime = [...filteredAnimeByStatus].sort((a,b) =>{
     switch (sortBy) {
@@ -91,7 +97,9 @@ function MyLibrary() {
           return (a.rating || 0) - (b.rating || 0);
 
       case "progress":
-        return (b.currentEpisode / b.animeId.episodes)-(a.currentEpisode / a.animeId.episodes);
+        const aProgress = a.animeId ? (a.currentEpisode / a.animeId.episodes) : 0;
+        const bProgress = b.animeId ? (b.currentEpisode / b.animeId.episodes) : 0;
+        return bProgress - aProgress;
 
       case "recent":
       default:
@@ -128,23 +136,22 @@ function MyLibrary() {
       />
 
       {/* Empty State */}
-      {sortedAnime.length === 0 && (
-        <p className="text-gray-400 text-center mt-12">
-          No anime in this category yet.
-        </p>
+      {sortedAnime.length === 0 ? (
+        <EmptyState status={activeTab} />
+      ) : (
+        <>
+          <StatsDashboard stats={stats} />
+          {/* Anime Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-6">
+            {sortedAnime.map((anime) => (
+              <LibraryCard
+              key={anime._id}
+              anime={anime}
+              onUpdate={fetchUserAnime} />
+            ))}
+          </div>
+        </>
       )}
-
-      <StatsDashboard stats={stats} />
-      {/* Anime Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-6">
-        {sortedAnime.map((anime) => (
-          <LibraryCard
-          key={anime._id}
-          anime={anime}
-          onUpdate={fetchUserAnime} />
-        ))}
-
-      </div>
 
     </div>
   )

@@ -7,9 +7,14 @@ const userAnimeSchema = new mongoose.Schema({
     required:true,
   },
   animeId:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Anime",
+    type:Number,// Jikan mal_id ==> mal_id = 20,
     required:true,
+  },
+  animeCache: {
+    title: String,
+    poster: String,
+    episodes: Number,
+    updatedAt: Date
   },
   status:{
     type:String,
