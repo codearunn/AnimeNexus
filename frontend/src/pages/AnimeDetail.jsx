@@ -79,10 +79,14 @@ export default function AnimeDetail() {
 
       {/* HERO */}
       <div className="relative h-[380px]">
+        <div className="relative  h-[380px]">
         <img
-          src={anime.images.banner}
-          className="w-full h-full object-cover opacity-40 blur-sm"
-        />
+                  src={anime.images.banner}
+                  className="w-full h-full object-cover opacity-40 blur-sm"
+                />
+                <div className="absolute inset-0  bg-gradient-to-t from-black via-black to-transparent"></div>
+        </div>
+
 
         {/* Poster */}
         <img

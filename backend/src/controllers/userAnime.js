@@ -139,5 +139,5 @@ module.exports = {
   createUserAnime,
   getUseranime,
   updateUserAnime,
-  deleteUserAnime
+  deleteUserAnime,
 };

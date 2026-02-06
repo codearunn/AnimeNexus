@@ -28,9 +28,11 @@ const userSchema= new mongoose.Schema({
     bio:{
       type:String,
       maxlength:500,
+      default:"where legends are tracked, journeys are remembered, and every episode leaves a scar.",
     },
     avatar:{
       type:String,
+      default:"/images/defaultPFP.jpg",
     },
   },
 }, {timestamps:true});

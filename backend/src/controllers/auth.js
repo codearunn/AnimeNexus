@@ -125,10 +125,75 @@ async function handleUserLogout(req, res, next) {
   }
 }
 
+const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const {displayName, bio} = req.body;
+
+    if (bio && bio.length > 500) {
+      return next(new ErrorResponse("Bio cannot exceed 500 characters", 400));
+    }
+
+    const updatedUser= await User.findByIdAndUpdate(userId,
+      {
+        "profile.displayName":displayName,
+        "profile.bio":bio,
+      },
+      {
+        new:true,
+        runValidators:true,
+        select:"-password",
+      }
+    );
+    if (!updatedUser) {
+      return next(new ErrorResponse("User not found", 404));
+    }
+
+    return res.status(200).json({
+      status: true,
+      user: updatedUser
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+const changePassword= async (req, res, next) => {
+  try {
+    const userId= req.user._id;
+    const {currentPassword, newPassword} = req.body;
+    if (!currentPassword || !newPassword) {
+      return next(new ErrorResponse("All fields are required", 400));
+    }
+
+    const user= await User.findById(userId).select("+password");
+    if(!user){
+      return next(new ErrorResponse("Not Authorized", 401));
+    }
+
+    const isMatch= user.comparePassword(currentPassword);
+    if(!isMatch){
+      return next(new ErrorResponse("Current password is incorrect", 401));
+    }
+
+    user.password= newPassword;
+    // SAVE triggers bcrypt pre-save hook
+    await user.save();
+
+    return res.status(200).json({
+      status:true,
+      message:"password changed successfully"
+    })
+  } catch (error) {
+    next(error);
+  }
+}
 
 module.exports ={
   handleUserRegistration,
   handleUserLogin,
   handleUserGetMe,
-  handleUserLogout
+  handleUserLogout,
+  updateProfile,
+  changePassword
 }

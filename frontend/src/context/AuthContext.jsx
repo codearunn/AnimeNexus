@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data.user);
     } catch (error) {
       // Don't set error on initial auth check - user just not logged in
+      console.error(error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -87,6 +88,7 @@ export const AuthProvider = ({ children }) => {
 
       value={{ // is just an object: “These are the things I want to share globally.”
         user,
+        setUser,
         loading,
         error,
         register,
