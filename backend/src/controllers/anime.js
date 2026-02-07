@@ -196,10 +196,25 @@ const getAnimeDetails = async (req, res, next) => {
   }
 }
 
+const getRecommendations = async (req, res, next) => {
+  try {
+    const userLibrary= await UserAnime.find({userId:req.user._id});
+    const allGenres = userLibrary.flatMap(anime => anime.animeCache.genre || []);
+    const genreCount = {}; let mostWatchedGenre ="action";
+    for(let genre in allGenres){
+      genreCount[genre]= (allGenres[genre] || 0)+1;
+    }
+
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getAllAnime,
   getAnimeById,
   searchAnime,
   getAllGenres,
-  getAnimeDetails
+  getAnimeDetails,
+  getRecommendations
 }

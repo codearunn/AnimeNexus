@@ -7,13 +7,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ["Bebas Neue", "sans-serif","Orbitron"],
+        heading: ["Space Grotesk", "sans-serif"],
         body: ["Inter", "sans-serif","Poppins"],
         cyber: ["Orbitron", "sans-serif"],
         horror: ["Nosifer", "cursive"],
         metal: ["Metal Mania"],
         manga: ["Rock Salt"],
         reggae: ["Reggae One"],
+
       }
     },
   },

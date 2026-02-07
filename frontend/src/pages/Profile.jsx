@@ -26,7 +26,7 @@ function Profile() {
       setLoading(true);
 
       const res = await api.put("/auth/profile", {
-          userName: displayName,
+          displayName,
           bio
       });
 

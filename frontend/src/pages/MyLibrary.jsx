@@ -77,7 +77,7 @@ function MyLibrary() {
   };
 
   // Filter by status AND ensure animeId exists
-  const filteredAnimeByStatus = userAnimeList.filter(anime => 
+  const filteredAnimeByStatus = userAnimeList.filter(anime =>
     anime.status === activeTab && anime.animeId
   );
 
@@ -97,16 +97,67 @@ function MyLibrary() {
           return (a.rating || 0) - (b.rating || 0);
 
       case "progress":
-        const aProgress = a.animeId ? (a.currentEpisode / a.animeId.episodes) : 0;
+        { const aProgress = a.animeId ? (a.currentEpisode / a.animeId.episodes) : 0;
         const bProgress = b.animeId ? (b.currentEpisode / b.animeId.episodes) : 0;
-        return bProgress - aProgress;
+        return bProgress - aProgress; }
 
       case "recent":
       default:
         return new Date(b.updatedAt) - new Date(a.updatedAt);
     }
-  })
+  });
 
+  const [showCheckBoxonAllAnimeCards, setShowCheckBoxonAllAnimeCards] = useState(false);
+  const [selectedAnime, setSelectedAnime] = useState([]);
+
+  const handleBulkStatusChange =async (newStatus) => {
+    if(selectedAnime.length ===0){
+      toast.error("No anime selected");
+      return;
+    }
+    try {
+      await Promise.all(
+        selectedAnime.map(id => api.put(`/user-anime/${id}`, {status:newStatus}))
+      );
+      toast.success(`Updated ${selectedAnime.length} anime to ${newStatus}`);
+        // Reset everything
+        setSelectedAnime([]);
+        setShowCheckBoxonAllAnimeCards(false);
+
+        // Refresh list
+        fetchUserAnime();
+    } catch (error) {
+      toast.error("Failed to change status");
+      console.log("Error in handleBulkStatusChange", error);
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if(selectedAnime.length===0){
+      toast.error("No anime selected");
+      return;
+    }
+    const confirmDelete = window.confirm(
+      `Delete ${selectedAnime.length} anime from your library?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+
+      await Promise.all(
+        selectedAnime.map(id => api.delete(`/user-anime/${id}`))
+      );
+      toast.success(`Deleted ${selectedAnime.length} from Your Library`);
+      setSelectedAnime([]);
+      setShowCheckBoxonAllAnimeCards(false);
+
+      // Refresh list
+      fetchUserAnime();
+    } catch (error) {
+      toast.error("Failed to remove animes");
+      console.log("Error in handleBulkDelete", error);
+    }
+  }
 
   if(loading){
     return(
@@ -141,13 +192,50 @@ function MyLibrary() {
       ) : (
         <>
           <StatsDashboard stats={stats} />
+
+          <div className='flex'>
+            {/* Select Multiple */}
+            <button
+              onClick={() =>setShowCheckBoxonAllAnimeCards(!showCheckBoxonAllAnimeCards)}
+              className='bg-red-700 font-bold text-sm text-black p-1 rounded-2xl shadow-md hover:shadow-red-900 hover:scale-105'
+            >Select Mutilple</button>
+
+            {/* Action Bar */}
+            {showCheckBoxonAllAnimeCards && (
+              <div className='ml-auto'>
+                <select
+                  onChange={(e) =>handleBulkStatusChange(e.target.value)}
+                  defaultValue=""
+                  className='bg-black text-white m-2 cursor-pointer'>
+                <option value=""> Change Status</option>
+                <option value="watching">Watching</option>
+                <option value="completed">Completed</option>
+                <option value="plan-to-watch">Plan To Watch</option>
+                <option value="on-hold">On Hold</option>
+                <option value="dropped">Dropped</option>
+              </select>
+
+              <button
+                onClick={handleBulkDelete}
+                className='text-red-700 m-2'
+              >
+                Delete Selected
+              </button>
+              </div>
+            )}
+          </div>
+
+
           {/* Anime Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-6">
             {sortedAnime.map((anime) => (
               <LibraryCard
               key={anime._id}
               anime={anime}
-              onUpdate={fetchUserAnime} />
+              onUpdate={fetchUserAnime}
+              showCheckBoxonAllAnimeCards={showCheckBoxonAllAnimeCards}
+              selected={selectedAnime}
+              setSelected={setSelectedAnime} />
             ))}
           </div>
         </>

@@ -14,6 +14,7 @@ import Loading from "./components/Loading";
 import AnimeCard from "./components/AnimeCard";
 import AnimeDetail from "./pages/AnimeDetail";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Recommendation from "./pages/Recommendation";
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
             <Route path="/login" element={<Login/>}/>
             <Route path="/register" element={<Register/>}/>
             <Route path="/card" element={<AnimeCard/>}/>
+            <Route path="/recommendations" element={<Recommendation/>}/>
             <Route path="/anime/:id" element={<AnimeDetail/>}/>
           </Routes>
         </main>

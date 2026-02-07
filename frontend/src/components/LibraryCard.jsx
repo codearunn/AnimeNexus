@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import Rating from "../components/Rating";
 
-function LibraryCard({ anime, onUpdate }) {
+function LibraryCard({ anime, onUpdate, showCheckBoxonAllAnimeCards, selected, setSelected }) {
   // Safety check: if animeId is null, don't render the card
   if (!anime.animeId) {
     console.error("LibraryCard: animeId is null for anime:", anime._id);
@@ -53,6 +53,27 @@ function LibraryCard({ anime, onUpdate }) {
 
   return (
     <div className="bg-gray-950 rounded-xl overflow-hidden shadow-lg hover:shadow-red-600/40 transition-all duration-300 group">
+
+      {/* CheckBoxes */}
+      {showCheckBoxonAllAnimeCards && (
+        <div className="flex p-2">
+          <label className="text-gray-500 ml-auto">
+            {selected.includes(anime._id) ? "Selected" : "Not selected"}
+          </label>
+
+          <input
+            type="checkbox"
+            checked={selected.includes(anime._id)}
+            onChange={() => {
+              setSelected(prev =>
+                prev.includes(anime._id)? // if already exists
+                prev.filter(id =>id!==anime._id) // remove it
+                : [...prev, anime._id]);
+            }}
+            className="ml-auto accent-red-600 cursor-pointer"
+          />
+        </div>
+      )}
 
       {/* Poster */}
       <div className="relative aspect-[2/3] overflow-hidden">
