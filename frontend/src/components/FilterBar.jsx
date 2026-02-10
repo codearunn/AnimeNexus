@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 function FilterBar({
   genres,
   selectedGenre,
@@ -6,6 +8,35 @@ function FilterBar({
   onStatusChange
 }) {
   const statuses = ["airing", "completed", "upcoming"];
+  
+  // Local state for debouncing
+  const [localGenre, setLocalGenre] = useState(selectedGenre);
+  const [localStatus, setLocalStatus] = useState(selectedStatus);
+
+  // Debounce genre changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onGenreChange(localGenre);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localGenre, onGenreChange]);
+
+  // Debounce status changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onStatusChange(localStatus);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localStatus, onStatusChange]);
+
+  // Sync with parent when parent changes externally
+  useEffect(() => {
+    setLocalGenre(selectedGenre);
+  }, [selectedGenre]);
+
+  useEffect(() => {
+    setLocalStatus(selectedStatus);
+  }, [selectedStatus]);
 
   return (
     <div className="mb-8 flex flex-wrap gap-4">
@@ -13,8 +44,8 @@ function FilterBar({
       <div className="flex-1 min-w-[200px]">
         <label className="block text-gray-400 text-sm mb-2">Genre</label>
         <select
-          value={selectedGenre}
-          onChange={(e) => onGenreChange(e.target.value)}
+          value={localGenre}
+          onChange={(e) => setLocalGenre(e.target.value)}
           className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700
                      rounded-lg text-white focus:outline-none focus:border-red-600"
         >
@@ -31,8 +62,8 @@ function FilterBar({
       <div className="flex-1 min-w-[200px]">
         <label className="block text-gray-400 text-sm mb-2">Status</label>
         <select
-          value={selectedStatus}
-          onChange={(e) => onStatusChange(e.target.value)}
+          value={localStatus}
+          onChange={(e) => setLocalStatus(e.target.value)}
           className="w-full px-4 py-3 bg-gray-900 border-2 border-gray-700
                      rounded-lg text-white focus:outline-none focus:border-red-600"
         >
@@ -49,6 +80,8 @@ function FilterBar({
       <div className="flex items-end">
         <button
           onClick={() => {
+            setLocalGenre("");
+            setLocalStatus("");
             onGenreChange("");
             onStatusChange("");
           }}

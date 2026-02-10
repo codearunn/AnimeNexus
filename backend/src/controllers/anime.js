@@ -2,7 +2,6 @@ const UserAnime = require("../models/UserAnime");
 const ErrorResponse = require("../utils/errorResponse");
 const {jikan, delay, transformAnime} = require("../services/jikan");
 
-
 /*
  * Genre name → Jikan ID mapping
  * (add more later)
@@ -18,7 +17,6 @@ const GENRE_MAP = {
   "Sci-Fi": 24,
   Thriller: 41
 };
-
 /**
  * Frontend status → Jikan status
  */
@@ -33,7 +31,7 @@ const getAllAnime = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 20,25); // Jikan max 25
 
-    await delay(350);
+    await delay(1000);
 
     const response = await jikan.get("/top/anime",{
       params:{
@@ -51,6 +49,17 @@ const getAllAnime = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Jikan getAllAnime error:", error);
+
+    // Handle rate limit
+    if (error.response?.status === 429) {
+      return next(new ErrorResponse("Too many requests. Please wait a moment and try again.", 429));
+    }
+
+    // Handle gateway timeout
+    if (error.response?.status === 504) {
+      return next(new ErrorResponse("Jikan API is temporarily unavailable. Please try again later.", 504));
+    }
+
     next(error);
   }
 }
@@ -58,7 +67,7 @@ const getAllAnime = async (req, res, next) => {
 const getAnimeById = async (req, res, next) => {
   try {
     const id = req.params.id;
-    await delay(350);
+    await delay(1000);
 
     const response = await jikan.get(`/anime/${id}`);
     const anime = transformAnime(response.data.data);
@@ -72,6 +81,17 @@ const getAnimeById = async (req, res, next) => {
     if (error.response?.status === 404) {
       return next(new ErrorResponse("Anime not found", 404));
     }
+
+    // Handle rate limit
+    if (error.response?.status === 429) {
+      return next(new ErrorResponse("Too many requests. Please wait a moment and try again.", 429));
+    }
+
+    // Handle gateway timeout
+    if (error.response?.status === 504) {
+      return next(new ErrorResponse("Jikan API is temporarily unavailable. Please try again later.", 504));
+    }
+
     next(error);
   }
 };
@@ -79,7 +99,7 @@ const getAnimeById = async (req, res, next) => {
 const searchAnime = async (req, res, next) => {
   try {
     const { q, genre, status, year, page = 1, limit = 20 } = req.query; // page=1 & limit=20 are default values
-    await delay(350);
+    await delay(1000);
 
     const genreId = GENRE_MAP[genre];
     const jikanStatus = STATUS_MAP[status];
@@ -107,13 +127,23 @@ const searchAnime = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Jikan searchAnime error:", error);
+
+    // Handle rate limit
+    if (error.response?.status === 429) {
+      return next(new ErrorResponse("Too many requests. Please wait a moment and try again.", 429));
+    }
+    // Handle gateway timeout
+    if (error.response?.status === 504) {
+      return next(new ErrorResponse("Jikan API is temporarily unavailable. Please try again later.", 504));
+    }
+
     next(new ErrorResponse("Failed to search anime", 500));
   }
 };
  //Get list of all available genres for dropdown
 const getAllGenres = async (req, res, next) => {
   try {
-    await delay(350);
+    await delay(1000);
 
     const response = await jikan.get("/genres/anime");
 
@@ -130,6 +160,17 @@ const getAllGenres = async (req, res, next) => {
 
   } catch (error) {
     console.error("Get genres error:", error);
+
+    // Handle rate limit
+    if (error.response?.status === 429) {
+      return next(new ErrorResponse("Too many requests. Please wait a moment and try again.", 429));
+    }
+
+    // Handle gateway timeout
+    if (error.response?.status === 504) {
+      return next(new ErrorResponse("Jikan API is temporarily unavailable. Please try again later.", 504));
+    }
+
     next(error);
   }
 };
@@ -138,7 +179,7 @@ const getAnimeDetails = async (req, res, next) => {
   try {
     const animeId= Number(req.params.id);
 
-    await delay(350);
+    await delay(1000);
 
     const response = await jikan.get(`/anime/${animeId}`);
     if(!response.data?.data){
@@ -192,22 +233,23 @@ const getAnimeDetails = async (req, res, next) => {
 
   } catch (error) {
     console.error("Anime details error:", error);
+
+    // Handle rate limit
+    if (error.response?.status === 429) {
+      return next(new ErrorResponse("Too many requests. Please wait a moment and try again.", 429));
+    }
+
+    // Handle gateway timeout
+    if (error.response?.status === 504) {
+      return next(new ErrorResponse("Jikan API is temporarily unavailable. Please try again later.", 504));
+    }
+
     next(error);
   }
 }
 
 const getRecommendations = async (req, res, next) => {
-  try {
-    const userLibrary= await UserAnime.find({userId:req.user._id});
-    const allGenres = userLibrary.flatMap(anime => anime.animeCache.genre || []);
-    const genreCount = {}; let mostWatchedGenre ="action";
-    for(let genre in allGenres){
-      genreCount[genre]= (allGenres[genre] || 0)+1;
-    }
 
-  } catch (error) {
-    next(error);
-  }
 }
 
 module.exports = {

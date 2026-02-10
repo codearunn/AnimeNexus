@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../api/axios";
 import SearchBar from "../components/SearchBar";
 import FilterBar from "../components/FilterBar";
@@ -21,16 +21,7 @@ function Browse() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchAnime();
-    //  eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, selectedGenre, selectedStatus, page]);
-
-  useEffect(() => {
-    fetchGenres();
-  }, [])
-
-  const fetchAnime = async () => {
+  const fetchAnime = useCallback(async () => {
     try {
       setBrowseLoading(true);
       setBrowseError("");
@@ -50,23 +41,54 @@ function Browse() {
       setTotalPages(data.pages);
     } catch (error) {
       console.error("Error in fetchAnime:", error);
+      
+      // Show user-friendly error messages
+      if (error.response?.status === 429) {
+        setBrowseError("⏳ Too many requests. Please wait 10 seconds and try again.");
+      } else if (error.response?.status === 504) {
+        setBrowseError("🔌 Jikan API is temporarily down. Try again in a minute.");
+      } else {
+        setBrowseError("❌ Failed to load anime. Please try again.");
+      }
     } finally {
       setBrowseLoading(false);
     }
-  }
+  }, [searchQuery, selectedGenre, selectedStatus, page]);
+
+  useEffect(() => {
+    // Fetch genres first, then anime after a delay
+    const initializePage = async () => {
+      await fetchGenres();
+      // Wait 1.5 seconds before fetching anime to avoid rate limit
+      setTimeout(() => {
+        fetchAnime();
+      }, 1500);
+    };
+    
+    initializePage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch anime when filters change (but not on initial mount)
+  useEffect(() => {
+    // Skip if this is the initial render (anime will be fetched by initializePage)
+    if (searchQuery || selectedGenre || selectedStatus || page > 1) {
+      fetchAnime();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedGenre, selectedStatus, page])
 
   const fetchGenres = async () => {
     try {
-      setBrowseLoading(true);
+      // Don't show loading for genres (loads in background)
       const res = await api.get("/anime/genres");
       const data = res.data;
       setGenres(data.data);
     } catch (error) {
       console.error("Error in fetchGenres:", error);
-    } finally {
-      setBrowseLoading(false);
+      // Silently fail for genres - not critical
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
