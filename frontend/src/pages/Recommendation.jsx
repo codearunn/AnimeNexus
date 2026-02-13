@@ -1,4 +1,5 @@
 import React from 'react'
+import AIchat from '../components/AI/AIchat'
 
 function Recommendation() {
   return (
@@ -12,8 +13,9 @@ function Recommendation() {
         <div className='w-[200px] h-[200px] border border-red-500'></div>
         <div className='w-[200px] h-[200px] border border-red-500'></div>
         <div className='w-[200px] h-[200px] border border-red-500'></div>
-
       </div>
+
+      <AIchat/>
     </div>
   )
 }
