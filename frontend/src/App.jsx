@@ -15,6 +15,7 @@ import AnimeCard from "./components/AnimeCard";
 import AnimeDetail from "./pages/AnimeDetail";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Recommendation from "./pages/Recommendation";
+import AIchat from './components/AI/AIchat'
 
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
             <Route path="/recommendations" element={<Recommendation/>}/>
             <Route path="/anime/:id" element={<AnimeDetail/>}/>
           </Routes>
+          <AIchat/>
         </main>
         <Footer/>
       </div>

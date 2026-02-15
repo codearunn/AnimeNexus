@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import api from "../../api/axios";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 function AIchat() {
   const [messages, setMessages] = useState([]);
@@ -132,8 +133,20 @@ function AIchat() {
                   key={ind}
                   className={`flex text-gray-500/90 ${message.role === "ai" ? "justify-start" : "justify-end"}`}
                 >
-                  <div className={`max-w-[70%] p-2 rounded-md ${message.role === "ai" ? "bg-red-900 text-black" : "bg-gray-700 text-black"}`}>
-                    {message.content}
+                  <div className={`max-w-[70%] p-3 rounded-lg ${
+                    message.role === "ai"
+                      ? "bg-red-950/40 border border-red-800 "
+                      : "bg-gray-700 text-black font-extrabold"
+                  }`}>
+                    {message.role === "ai" ? (
+                      <div className="prose prose-invert prose-sm max-w-none">
+                        <ReactMarkdown>
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      message.content
+                    )}
                   </div>
                 </div>
               ))}

@@ -2,8 +2,10 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
-import Loading from "../components/Loading";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
+import AIsimilarAnimes from "../components/AI/AIsimilarAnimes";
+
 
 const STATUS_OPTIONS = [
   "watching",
@@ -22,6 +24,18 @@ export default function AnimeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
+
+  // summary states
+  const [aisummary, setAisummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  // similar states
+  const [similarAnime, setSimilarAnime] = useState([]);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarError, setSimilarError] = useState("");
+
 
   useEffect(() => {
     fetchAnimeDetails();
@@ -57,6 +71,52 @@ export default function AnimeDetail() {
     }
   };
 
+  const generateSummary = async () => {
+    if (!anime?.title?.english || !anime?.synopsis) {
+      toast.error("Anime data incomplete");
+      return;
+    }
+    try {
+      setSummaryLoading(true);
+      setSummaryError("");
+
+      const res = await api.post("ai/summary", {
+        title: anime.title.english,
+        synopsis: anime.synopsis,
+        genres: anime.genres,
+      });
+
+      setAisummary(res.data.summary);
+
+    } catch (error) {
+      setSummaryError("Failed to generate AI summary");
+      console.log("Error in generateSummary", error);
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+  const findSimilar = async () => {
+    try {
+      setSimilarLoading(true);
+      setSimilarError("");
+
+      const res = await api.post("/ai/similar", {
+        title:anime.title.english,
+        synopsis:anime.synopsis,
+        genres:anime.genres,
+      })
+
+      setSimilarAnime(res.data.similarAnimes);
+      console.log(similarAnime);
+    } catch (error) {
+      setSimilarError("Failed to find similar Animes");
+      console.log("Error in findSimilar", error);
+    } finally{
+      setSimilarLoading(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white text-2xl">
@@ -72,19 +132,35 @@ export default function AnimeDetail() {
       </div>
     );
   }
-
-
   return (
     <div className="bg-black text-white min-h-screen">
 
       {/* HERO */}
       <div className="relative h-[380px]">
         <div className="relative  h-[380px]">
-        <img
-                  src={anime.images.banner}
-                  className="w-full h-full object-cover opacity-40 blur-sm"
-                />
-                <div className="absolute inset-0  bg-gradient-to-t from-black via-black to-transparent"></div>
+          <img
+            src={anime.images.banner}
+            className="w-full h-full object-cover opacity-40 blur-sm"
+          />
+
+          {/* summary button */}
+          <button
+            onClick={() => {
+              setSummaryOpen(prev => !prev);
+              if (!aisummary) generateSummary();
+            }}
+            disabled={summaryLoading}
+            className="flex mr-auto ml-[300px] mt-6 rounded-xl text-red-500"
+          > {summaryOpen ? "❌ Close" : "✨Summarize"}
+            <span className="text-yellow-400 text-4xl pt-0">↯</span>
+          </button>
+          {/* Summary section */}
+
+          {summaryError && (
+            <p className="text-red-500 mt-3">{summaryError}</p>
+          )}
+
+          <div className="absolute inset-0  bg-gradient-to-t from-black via-black to-transparent"></div>
         </div>
 
 
@@ -95,6 +171,25 @@ export default function AnimeDetail() {
         />
       </div>
 
+      {summaryOpen && (
+        <div className="mt-4 mx-auto bg-red-950/40 border border-red-900 p-4 rounded-xl max-w-xl">
+          <h3 className="text-red-500 font-bold mb-2">✨ AI Summary</h3>
+
+          {summaryLoading ? (
+            <div className="space-y-2 w-72 animate-pulse mt-3">
+              <div className="h-4 bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+              <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+            </div>
+          ) : (
+            <div className="prose prose-invert prose-sm max-w-none">
+              <ReactMarkdown>
+                {aisummary}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+      )}
       {/* CONTENT */}
       <div className="max-w-7xl mx-auto px-6 pt-32 grid grid-cols-1 md:grid-cols-3 gap-10">
 
@@ -129,12 +224,21 @@ export default function AnimeDetail() {
 
           {/* ACTION BUTTON */}
           {user && (
-            <button
-              onClick={() => setOpen(true)}
-              className="bg-red-600 hover:bg-red-700 px-8 py-3 rounded-xl font-bold shadow-lg mb-5"
-            >
-              {stats.userStats ? "Update Status" : "Add to My List"}
-            </button>
+            <>
+              <button
+                onClick={() => setOpen(true)}
+                className="bg-red-600 hover:bg-red-700 px-8 py-3 rounded-xl font-bold shadow-lg mb-5"
+              >
+                {stats.userStats ? "Update Status" : "Add to My List"}
+              </button>
+
+              {/* Similar button */}
+              <button
+               onClick={findSimilar}
+               disabled={similarLoading}
+               className="bg-black hover:bg-gray-900 p-2 rounded-xl font-bold shadow-lg mb-5  ml-[300px] text-red-600 text-xl"
+              > <span className="text-yellow-500">↓↓↓↓</span> Find Similar Animes</button>
+            </>
           )}
         </div>
 
@@ -224,6 +328,16 @@ export default function AnimeDetail() {
             </button>
           </div>
         </div>
+      )}
+
+
+      {/* Show loading skeleton OR actual results OR nothing */}
+      {(similarLoading || similarAnime.length > 0) && (
+        <AIsimilarAnimes
+          similarAnime={similarAnime}
+          loading={similarLoading}
+          similarError={similarError}
+        />
       )}
     </div>
   );
