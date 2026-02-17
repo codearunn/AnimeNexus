@@ -1,11 +1,25 @@
 require("dotenv").config();
-const openAI = require("openai"); //is a class (blueprint for creating AI clients)
+const openAI = require("openai");
 const ErrorResponse = require("../utils/errorResponse");
 
+// Helper function for better error messages
+const getErrorMessage = (error) => {
+  if (error.code === 'ECONNREFUSED') {
+    return 'AI service unavailable. Please try again later.';
+  }
+  if (error.response?.status === 429) {
+    return 'Rate limit exceeded. Please wait a moment.';
+  }
+  if (error.response?.status === 401) {
+    return 'AI API key invalid. Please contact support.';
+  }
+  if (error.response?.status === 503) {
+    return 'AI service temporarily unavailable. Please try again.';
+  }
+  return 'AI request failed. Please try again.';
+};
 
 // Creates a new AI client instance
-// Like logging into a service
-// Configures how to connect
 const openai = new openAI({
   apiKey:process.env.OPENROUTER_API_KEY,
   baseURL:'https://openrouter.ai/api/v1',
@@ -29,11 +43,6 @@ const testAIConnection = async () => {
     // response.choices array of possible responses
     // [0] = first (and usually only) response
     // .message.content = the actual text
-
-    console.log("📥 AI Response:");
-    console.log(aiMessage);
-    console.log("\n✅ AI connection successful!");
-
     return aiMessage;
 
   } catch (error) {
@@ -86,8 +95,9 @@ const generateSummary = async (title, synopsis, genres) => {
 
     return text;
   } catch (error) {
-    console.error("Error in generateSummary", error.message);
-    throw new ErrorResponse("Failed to generate summary", 500);
+    console.error("Error in generateSummary:", error.message);
+    const message = getErrorMessage(error);
+    throw new ErrorResponse(message, 500);
   }
 };
 
@@ -134,12 +144,25 @@ const findSimilarAnime = async (title, synopsis, genres) => {
 
     let text = response.choices[0].message?.content?.trim();
 
-    console.log("🤖 RAW AI RESPONSE:", text);
-
-    if (!text) throw new ErrorResponse("AI returned empty response", 500);
+    if (!text) {
+      throw new ErrorResponse("AI returned empty response", 500);
+    }
 
     // Remove markdown code blocks
     text = text.replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
+
+    // Clean special Unicode characters that break JSON
+    text = text
+      .replace(/−/g, "-")           // Replace minus sign with dash
+      .replace(/"/g, '"')           // Replace smart quotes
+      .replace(/"/g, '"')
+      .replace(/'/g, "'")           // Replace curly apostrophes
+      .replace(/'/g, "'")
+      .replace(/…/g, "...")         // Replace ellipsis
+      .replace(/—/g, "-")           // Replace em dash
+      .replace(/–/g, "-");          // Replace en dash
+
+    console.log("🧹 After cleaning:", text.substring(0, 100) + "...");
 
     // Try to extract JSON if there's extra text
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -151,16 +174,26 @@ const findSimilarAnime = async (title, synopsis, genres) => {
     try {
       parsed = JSON.parse(text);
     } catch (parseError) {
+      console.error("❌ JSON Parse Error:", parseError.message);
+      console.error("❌ Failed text:", text);
       throw new ErrorResponse("AI returned invalid JSON", 500);
     }
 
     if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
+      console.error("❌ Invalid format - missing recommendations array");
+      console.error("❌ Parsed object:", parsed);
       throw new ErrorResponse("Invalid AI response format", 500);
     }
+
+    console.log("✅ Returning", parsed.recommendations.length, "recommendations");
     return parsed.recommendations;
   } catch (error) {
     console.error("❌ Error in findSimilarAnime:", error.message);
-    throw new ErrorResponse("Failed to findSimilarAnimes", 500);
+    if (error.response) {
+      console.error("❌ API Error Response:", error.response.data);
+    }
+    const message = getErrorMessage(error);
+    throw new ErrorResponse(message, 500);
   }
 }
 module.exports = {

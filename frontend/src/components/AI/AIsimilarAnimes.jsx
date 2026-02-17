@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom';
+
 function AIsimilarAnimes({similarAnime, loading}) {
+  const navigate = useNavigate();
   // Loading skeleton
   if (loading) {
     return (
       <div className="bg-black p-10">
-        <h2 className="text-3xl font-bold text-red-600 mb-6">🤖 AI Recommended Similar Anime</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
@@ -46,12 +48,14 @@ function AIsimilarAnimes({similarAnime, loading}) {
         {similarAnime.map((anime, ind) => (
           <div
             key={ind}
-            className="group relative bg-gray-900 rounded-lg overflow-hidden hover:shadow-2xl hover:shadow-red-600/50 transition-all duration-300 transform hover:-translate-y-2"
+            onClick={() => navigate(`/anime/${anime._id}`)}
+            className="group relative bg-gray-900 rounded-lg overflow-hidden hover:shadow-2xl hover:shadow-red-600/50 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
           >
             {/* Poster Image */}
             <img
               src={anime.images?.poster || '/placeholder.jpg'}
               alt={anime.title?.english || anime.title}
+              loading='lazy'
               className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-300"
             />
 

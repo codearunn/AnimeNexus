@@ -11,6 +11,7 @@ const authRoute = require("./routes/auth");
 const animeRoute = require("./routes/anime");
 const userAnimeRoute = require("./routes/userAnime");
 const aiRoutes = require("./routes/ai");
+const adminRoutes = require("./routes/admin");
 
 //DB connection
 const connectDB = require("./config/db");
@@ -32,6 +33,7 @@ app.use('/api/auth',authRoute);
 app.use('/api/anime', animeRoute);
 app.use('/api/user-anime', userAnimeRoute);
 app.use('/api/ai', aiRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // 404 Handler

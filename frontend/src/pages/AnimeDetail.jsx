@@ -76,45 +76,88 @@ export default function AnimeDetail() {
       toast.error("Anime data incomplete");
       return;
     }
-    try {
-      setSummaryLoading(true);
-      setSummaryError("");
 
-      const res = await api.post("ai/summary", {
-        title: anime.title.english,
-        synopsis: anime.synopsis,
-        genres: anime.genres,
-      });
+    const attemptGenerate = async (retryCount = 0) => {
+      try {
+        setSummaryLoading(true);
+        setSummaryError("");
 
-      setAisummary(res.data.summary);
+        const res = await api.post("ai/summary", {
+          title: anime.title.english,
+          synopsis: anime.synopsis,
+          genres: anime.genres,
+        });
 
-    } catch (error) {
-      setSummaryError("Failed to generate AI summary");
-      console.log("Error in generateSummary", error);
-    } finally {
-      setSummaryLoading(false);
-    }
+        setAisummary(res.data.summary);
+
+        // Show cache hit notification
+        if (res.data.cached) {
+          toast.success("⚡ Loaded from cache (instant!)", {
+            duration: 2000,
+            icon: "💾"
+          });
+        }
+
+      } catch (error) {
+        // Retry once if first attempt fails
+        if (retryCount === 0) {
+          toast.info("Retrying...", { duration: 1000 });
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return attemptGenerate(1);
+        }
+
+        // Failed after retry
+        setSummaryError("Failed to generate AI summary");
+        toast.error("Failed after 2 attempts. Try again later.");
+        console.log("Error in generateSummary", error);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    await attemptGenerate();
   };
 
   const findSimilar = async () => {
-    try {
-      setSimilarLoading(true);
-      setSimilarError("");
+    const attemptFind = async (retryCount = 0) => {
+      try {
+        setSimilarLoading(true);
+        setSimilarError("");
 
-      const res = await api.post("/ai/similar", {
-        title:anime.title.english,
-        synopsis:anime.synopsis,
-        genres:anime.genres,
-      })
+        const res = await api.post("/ai/similar", {
+          title: anime.title.english,
+          synopsis: anime.synopsis,
+          genres: anime.genres,
+        });
 
-      setSimilarAnime(res.data.similarAnimes);
-      console.log(similarAnime);
-    } catch (error) {
-      setSimilarError("Failed to find similar Animes");
-      console.log("Error in findSimilar", error);
-    } finally{
-      setSimilarLoading(false);
-    }
+        setSimilarAnime(res.data.similarAnimes);
+
+        // Show cache hit notification
+        if (res.data.cached) {
+          toast.success("⚡ Loaded from cache!", {
+            duration: 2000,
+            icon: "💾"
+          });
+        }
+
+      } catch (error) {
+        // Retry once if first attempt fails
+        if (retryCount === 0) {
+          toast.info("Retrying...", { duration: 1000 });
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return attemptFind(1);
+        }
+
+        // Failed after retry
+        setSimilarError("Failed to find similar Animes");
+        toast.error("Failed after 2 attempts. Try again later.");
+        console.log("Error in findSimilar", error);
+      } finally {
+        setSimilarLoading(false);
+      }
+    };
+
+    await attemptFind();
   }
 
   if (loading) {
@@ -140,6 +183,7 @@ export default function AnimeDetail() {
         <div className="relative  h-[380px]">
           <img
             src={anime.images.banner}
+            loading="lazy"
             className="w-full h-full object-cover opacity-40 blur-sm"
           />
 
@@ -150,9 +194,28 @@ export default function AnimeDetail() {
               if (!aisummary) generateSummary();
             }}
             disabled={summaryLoading}
-            className="flex mr-auto ml-[300px] mt-6 rounded-xl text-red-500"
-          > {summaryOpen ? "❌ Close" : "✨Summarize"}
-            <span className="text-yellow-400 text-4xl pt-0">↯</span>
+            className={`flex items-center mr-auto ml-[300px] mt-6 rounded-xl px-4 py-2 transition-all ${
+              summaryLoading
+                ? 'text-gray-500 cursor-not-allowed opacity-60'
+                : 'text-red-500 hover:scale-105'
+            }`}
+          >
+            {summaryLoading ? (
+              <>
+                <span className="animate-spin mr-2 text-2xl">⏳</span>
+              </>
+            ) : summaryOpen ? (
+              <div className="mr-[500px]">
+                <span>❌</span>
+                <span>Close Summary</span>
+              </div>
+            ) : (
+              <>
+                <span className="mr-2">✨</span>
+                <span>Summarize</span>
+                <span className="text-yellow-400 text-4xl ml-2">↯</span>
+              </>
+            )}
           </button>
           {/* Summary section */}
 
@@ -167,6 +230,7 @@ export default function AnimeDetail() {
         {/* Poster */}
         <img
           src={anime.images.poster}
+          loading="lazy"
           className="absolute bottom-[-80px] left-10 w-52 rounded-xl border-4 border-red-600 shadow-2xl"
         />
       </div>
@@ -234,10 +298,26 @@ export default function AnimeDetail() {
 
               {/* Similar button */}
               <button
-               onClick={findSimilar}
-               disabled={similarLoading}
-               className="bg-black hover:bg-gray-900 p-2 rounded-xl font-bold shadow-lg mb-5  ml-[300px] text-red-600 text-xl"
-              > <span className="text-yellow-500">↓↓↓↓</span> Find Similar Animes</button>
+                onClick={findSimilar}
+                disabled={similarLoading}
+                className={`bg-black hover:bg-gray-900 p-3 rounded-xl font-bold shadow-lg mb-5 ml-[300px] text-xl transition-all flex items-center ${
+                  similarLoading
+                    ? 'text-gray-500 cursor-not-allowed opacity-60'
+                    : 'text-red-600 hover:scale-105'
+                }`}
+              >
+                {similarLoading ? (
+                  <>
+                    <span className="animate-spin mr-2 text-2xl">🔄</span>
+                    <span>Finding Similar Anime...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-yellow-500 mr-2">↓↓↓↓</span>
+                    <span>Find Similar Animes</span>
+                  </>
+                )}
+              </button>
             </>
           )}
         </div>

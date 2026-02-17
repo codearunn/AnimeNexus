@@ -8,7 +8,6 @@ function LoggedIn() {
     <>
       <Link to="/Browse" className="text-white hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Browse</Link>
       <Link to="/MyLibrary" className="text-white  hover:text-red-500 font-extrabold text-lg transition-colors duration-200">My Library</Link>
-      <Link to="/recommendations" className="text-white  hover:text-red-500 font-extrabold text-lg transition-colors duration-200">Recommendations</Link>
       <select className="bg-black text-white font-extrabold text-lg">
          <option onClick={() => navigate("/")}>Hi, {user.userName}</option>
          <option onClick={logout} > Logout</option>

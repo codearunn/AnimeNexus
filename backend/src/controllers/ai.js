@@ -1,6 +1,8 @@
 const {openai} = require("../services/ai");
 const ErrorResponse = require("../utils/errorResponse");
 const {generateSummary, findSimilarAnime} = require("../services/ai");
+const cache = require("../services/cache");
+const {jikan, delay, transformAnime} = require("../services/jikan");
 
 const getRecommendation= async (req, res, next) => {
   try {
@@ -61,6 +63,25 @@ const getSummary = async (req, res, next) => {
       throw new ErrorResponse("Genres must be a non-empty array", 400);
     }
 
+    // Caching Mechanism
+    const cacheKey = `summary:${title
+                      .toLowerCase()
+                      .trim()
+                      .replace(/\s+/g,"-")}`; // Unique Identifier
+
+    const cached= cache.get(cacheKey);
+
+    // if Already cached return immediately => Zero AI cost
+    if(cached){
+      console.log("Cache Hit:", cacheKey);
+      return res.status(200).json({
+        success:true,
+        summary:cached,
+        cached:true,
+      })
+    };
+
+
     //Timeout Protection
     const timeoutPromise = new Promise((_, reject) =>{
       setTimeout(() => {
@@ -72,10 +93,22 @@ const getSummary = async (req, res, next) => {
 
     // “Run both promises simultaneously and take whichever finishes first.”
     const summary = await Promise.race([aiPromise, timeoutPromise]);
+    if(!summary){
+      throw new ErrorResponse("AI returned empty summary", 500);
+    }
+
+    //STORE IN CACHE
+    cache.set(cacheKey, summary, 86400); // 24 hour
+    // 60 sec
+    // × 60 min
+    // × 24 hr
+    // = 86400 seconds
+
     return res.status(200).json({
-      status:true,
-      summary
-    })
+      success:true,
+      summary,
+      cached:false,
+    });
 
   } catch (error) {
     console.error("Error in getSummary:", error.message);
@@ -83,12 +116,11 @@ const getSummary = async (req, res, next) => {
   }
 };
 
+// Receives anime data → asks AI for similar anime → fetches real data from Jikan API → merges results → sends to frontend
 const getSimilarAnime = async (req, res, next) => {
   try {
     const {title, synopsis, genres} = req.body;
-    
-    console.log("📥 Received request for similar anime:", title);
-    
+
     if(!title || !synopsis){
       throw new ErrorResponse("Title and synopsis are required", 400);
     }
@@ -99,66 +131,97 @@ const getSimilarAnime = async (req, res, next) => {
       throw new ErrorResponse("Genres must be a non-empty array", 400);
     }
 
-    console.log("✅ Validation passed, calling AI...");
+    //caching
+    const cacheKey = `similar:${title.toLowerCase().replace(/[^\w]+/g,"-")}`; // string.replace(pattern, replacement)
+    const cached = cache.get(cacheKey);
+    if(cached){
+      console.log("Cache Hit:", cacheKey);
+      return res.status(200).json({
+        success:true,
+        similarAnimes:cached,
+        cached:true,
+      });
+    }
 
     const timeoutPromise= new Promise((_, reject) =>{
       setTimeout(() => {
         reject(new ErrorResponse("AI request timeout", 504));
-      }, 15000); // Increased to 15 seconds
-    })
+      }, 15000); // 15 seconds
+    });
     const aiPromise= findSimilarAnime(title, synopsis, genres);
 
     const aiRecommendations = await Promise.race([aiPromise, timeoutPromise]);
-    
-    console.log("✅ AI returned", aiRecommendations.length, "recommendations");
-    
-    // Now search Jikan for each recommended anime to get full data
-    const {jikan, delay, transformAnime} = require("../services/jikan");
-    const enrichedAnimes = [];
-    
-    console.log("🔍 Searching Jikan for each anime...");
-    
-    for (const rec of aiRecommendations) {
-      try {
-        console.log(`  Searching for: ${rec.title}`);
-        await delay(1000); // Rate limiting
-        const response = await jikan.get("/anime", {
-          params: {
-            q: rec.title,
-            limit: 1
-          }
-        });
-        
-        if (response.data?.data && response.data.data.length > 0) {
-          const animeData = transformAnime(response.data.data[0]);
-          // Add AI data to the anime object
-          enrichedAnimes.push({
-            ...animeData,
-            aiReason: rec.reason,
-            aiMatchScore: rec.matchScore
-          });
-          console.log(`  ✅ Found: ${animeData.title.english}`);
-        } else {
-          console.log(`  ❌ Not found in Jikan: ${rec.title}`);
-        }
-      } catch (error) {
-        console.error(`  ❌ Failed to fetch anime: ${rec.title}`, error.message);
-        // Skip this anime if Jikan fails
-      }
+
+    if (!aiRecommendations || aiRecommendations.length === 0) {
+      throw new ErrorResponse("AI returned no recommendations", 500);
     }
-    
-    console.log("✅ Returning", enrichedAnimes.length, "enriched animes");
-    
+
+
+    // ---------- JIKAN FETCH ----------
+    const enrichedAnimes = await Promise.all( // Run multiple async operations in parallel and wait until all finish
+      aiRecommendations.map(async (rec) => { // map(async () => {}) returns an array of Promises. => That’s why we wrap with:Promise.all()
+        try {
+          await delay(500);
+
+          const response = await jikan.get("/anime", {
+            params: { q: rec.title, limit: 1 }
+          });
+
+          if (response.data?.data?.length) {
+            const animeData = transformAnime(response.data.data[0]);
+            return {
+              ...animeData,
+              aiReason: rec.reason, // Data enrichment
+              aiMatchScore: rec.matchScore
+            };
+          }
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    // After Promise.all => enriched = [
+    //                     {...Naruto},
+    //                     null,
+    //                     {...Bleach},
+    //                     null
+    //                     ]. Because some may fail.
+
+    //.filter(x => Boolean(x))
+    const filtered = enrichedAnimes.filter(Boolean); // This removes falsy values: [ obj, null, obj, null ] becomes [ obj, obj ]
+
+    // STORE IN CACHE
+    cache.set(cacheKey, filtered, 86400);
+
     return res.status(200).json({
-      status:true,
-      similarAnimes: enrichedAnimes
-    })
+      success: true,
+      similarAnimes: filtered,
+      cached: false
+    });
 
   } catch (error) {
-    console.error("❌ Error in getSimilarAnime:", error.message);
-    console.error("❌ Full error:", error);
+    console.error("Error in getSimilarAnime:", error.message);
     next(error);
   }
+
+  // AI recommends titles
+  //         ↓
+  // map() creates async fetch tasks
+  //         ↓
+  // Promise.all runs all tasks in parallel
+  //         ↓
+  // Each task fetches from Jikan API
+  //         ↓
+  // transformAnime formats data
+  //         ↓
+  // merge AI reason + score
+  //         ↓
+  // null returned for failed fetches
+  //         ↓
+  // filter(Boolean) removes failed results
+  //         ↓
+  // final clean anime list returned
 }
 
 
