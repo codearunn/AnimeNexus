@@ -110,7 +110,7 @@ function Profile() {
         <div className="flex p-10 border-2 border-red-900 w-[900px] rounded-xl mt-10 bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700">
           <div>
             <img
-              src={`http://localhost:8000${user?.profile?.avatar || "/images/defaultPFP.jpg"}`}
+              src={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${user?.profile?.avatar || "/images/defaultPFP.jpg"}`}
               className="h-32 w-32 rounded-full object-cover"
             />
             <button
