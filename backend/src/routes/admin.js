@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const cache = require("../services/cache");
+const { protect, isAdmin } = require("../middleware/auth");
+
+// Protect all admin routes
+router.use(protect, isAdmin);
 
 // GET /api/admin/cache-stats
 // Returns cache performance metrics

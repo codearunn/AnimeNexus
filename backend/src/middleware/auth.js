@@ -40,4 +40,17 @@ const protect = async (req, res, next) =>{
   }
 }
 
-module.exports= protect;
+const isAdmin = (req, res, next) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: "Not authorized as admin",
+    });
+  }
+  next();
+};
+
+// Export both default (for backward compatibility) and named exports
+module.exports = protect;
+module.exports.protect = protect;
+module.exports.isAdmin = isAdmin;

@@ -18,7 +18,20 @@ function Profile() {
     }
   }, [user]);
 
-  const isChanged = displayName.trim() !== user?.userName || bio.trim() !== user?.profile?.bio;
+  const originalDisplayName = useMemo(
+    () => (user?.profile?.displayName || user?.userName || "").trim(),
+    [user]
+  );
+  const originalBio = useMemo(() => (user?.profile?.bio || "").trim(), [user]);
+
+  const isChanged =
+    displayName.trim() !== originalDisplayName || bio.trim() !== originalBio;
+
+  const apiBase =
+    import.meta.env.VITE_API_URL?.replace("/api", "") || "";
+  const avatarPath = user?.profile?.avatar || "/images/defaultPFP.jpg";
+  const avatarSrc =
+    avatarPath?.startsWith("http") ? avatarPath : `${apiBase}${avatarPath}`;
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -102,159 +115,274 @@ function Profile() {
     }
   }
 
-  return (
-    <div className="bg-black min-h-screen">
-      <div className="flex justify-between items-center">
-
-        {/* Profile Header */}
-        <div className="flex p-10 border-2 border-red-900 w-[900px] rounded-xl mt-10 bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700">
-          <div>
-            <img
-              src={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${user?.profile?.avatar || "/images/defaultPFP.jpg"}`}
-              className="h-32 w-32 rounded-full object-cover"
-            />
-            <button
-              className="text-gray-500 mt-2 ml-6"
-              onClick={() => setEdit(!edit)}
-            >
-              Edit Profile ✨
-            </button>
-
-            {edit && (
-              <form
-               onSubmit={handleUpdateProfile}
-               className="bg-zinc-800 w-auto p-0 rounded-xl text-white"
-              >
-                <div className="flex items-center justify-center p-2 ">
-                  <button
-                    type="button"
-                    onClick={() => setEdit(false)}
-                  >❌️</button>
-                </div>
-                <div className="p-2">
-                  <label className="mr-2">user name</label>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full bg-black border border-red-800 rounded-lg p-3 text-white resize-none focus:outline-none focus:border-red-500"
-                  />
-                </div>
-
-                <div className="p-2">
-                  <label className="block">Bio</label>
-                  <textarea
-                    placeholder="Write your bio..."
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    className="w-full bg-black border border-red-800 rounded-lg p-3 text-white resize-none focus:outline-none focus:border-red-500"
-                    rows={4}
-                  />
-                </div>
-
-                <div className="flex justify-center items-center p-2">
-                  <button
-                    type="submit"
-                    disabled={!isChanged || loading}
-                    className={`border  p-2  rounded-lg text-md shadow-md  transition
-                              ${isChanged ? " border-red-700 bg-black text-red-900 hover:text-red-600 hover:shadow-red-900"
-                        : " border-zinc-700 bg-zinc-700 text-gray-500 cursor-not-allowed hover:shadow-zinc-900"
-                      }
-                            `}
-                  >
-                    save changes
-                  </button>
-                </div>
-
-              </form>
-            )}
-          </div>
-
-          <div className="text-white ml-10 " >
-            <p className="font-extrabold text-7xl font-horror text-red-500">
-             {(user?.profile?.displayName || user?.userName || "DEFAULT").toUpperCase()}
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="border border-red-900/60 bg-gradient-to-br from-red-950/40 via-black to-red-950/40 rounded-2xl p-8 shadow-[0_0_0_1px_rgba(220,38,38,0.15)]">
+            <h1 className="text-2xl font-extrabold text-red-500">Profile</h1>
+            <p className="mt-2 text-gray-400">
+              Please sign in to view your profile.
             </p>
-
-            <p className="mt-2 font-metal"><label>Email:</label> {user?.email}</p>
-            <p className="mt-1 font-reggae text-xl font-bold">
-              <label className="text-red-800 border-b-2 border-red-900">Member since:</label>
-              &nbsp; {user?.createdAt
-                ? new Date(user.createdAt).toISOString().split("T")[0]
-                : "Loading..."}
-            </p>
-            <h4 className="mt-5 text-lg font-manga text-red-400">
-              <label className="text-gray-500">Bio📌</label>
-              &nbsp; {user?.profile?.bio}
-            </h4>
           </div>
         </div>
-
-        {/* Statistics Dashboard */}
-        <div className="grid grid-cols-2 grid-rows-2 gap-4 p-2  text-white border-none w-[500px] h-[320px] mt-10 ">
-          <div className="border-2 rounded-xl  border-red-900 p-6 text-center bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700 transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-105">
-            <span className="fond-bold text-gray-400 text-lg">Total Anime</span>
-            <h1 className="text-7xl p-3 text-red-700 font-extrabold">{stats.totalAnime}</h1>
-          </div>
-          <div className="border-2 rounded-xl  border-red-900 p-6 text-center bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700 transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-105">
-            <span className="fond-bold text-gray-400 text-lg">Completed</span>
-            <h1 className="text-7xl p-3 text-red-700 font-extrabold ">{stats.completed}</h1>
-          </div>
-          <div className="border-2 rounded-xl  border-red-900 p-6 text-center bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700 transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-105">
-            <span className="fond-bold text-gray-400 text-lg">Watching</span>
-            <h1 className="text-7xl p-3 text-red-700 font-extrabold">{stats.watching}</h1>
-          </div>
-          <div className="border-2 rounded-xl  border-red-900 p-6 text-center bg-gradient-to-br from-red-950/70 via-black to-red-950/70 shadow-md shadow-red-700 transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-105">
-            <span className="fond-bold text-gray-400 text-md ">Total Episodes Watched </span>
-            <h1 className="text-7xl p-3 text-red-700 font-extrabold">{stats.totalEpisodesWatched}</h1>
-          </div>
-        </div>
-
       </div>
+    );
+  }
 
-      {/* Security Section */}
-      <div className="p-5 max-w-md">
-        <h1 className="text-2xl text-white mt-5 mb-0 font-extrabold">Account Setting ⚙️</h1>
-        <div className="mt-8 bg-black border border-red-500/70 rounded-lg p-6">
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        {/* Top header */}
+        <div className="flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              Your <span className="text-red-500">Profile</span>
+            </h1>
+            <p className="mt-1 text-gray-400">
+              Manage your identity, stats, and account security.
+            </p>
+          </div>
+
           <button
-            onClick={() => setShowPasswordform(!showPasswordform)}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
-          >Change Password</button>
+            onClick={() => setEdit(true)}
+            className="inline-flex items-center gap-2 rounded-xl border border-red-900/60 bg-gradient-to-r from-red-950/40 via-black to-red-950/40 px-4 py-2 text-sm font-semibold text-gray-100 hover:text-white hover:border-red-700/60 transition"
+          >
+            Edit profile
+            <span aria-hidden>✨</span>
+          </button>
+        </div>
+
+        {/* Main grid */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: profile card */}
+          <section className="lg:col-span-2 border border-red-900/60 rounded-2xl overflow-hidden bg-gradient-to-br from-red-950/40 via-black to-red-950/40 shadow-[0_0_0_1px_rgba(220,38,38,0.12)]">
+            <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-start">
+              <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-3">
+                <img
+                  src={avatarSrc}
+                  alt="Profile avatar"
+                  className="h-20 w-20 md:h-28 md:w-28 rounded-full object-cover ring-2 ring-red-700/40"
+                />
+                <div className="md:hidden">
+                  <p className="text-xl font-extrabold">
+                    {(user?.profile?.displayName || user?.userName || "User")}
+                  </p>
+                  <p className="text-sm text-gray-400">{user?.email}</p>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <div className="hidden md:block">
+                  <h2 className="text-4xl font-extrabold leading-tight">
+                    <span className="text-red-500">
+                      {(user?.profile?.displayName || user?.userName || "User")}
+                    </span>
+                  </h2>
+                  <p className="mt-1 text-gray-300">{user?.email}</p>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-xs uppercase tracking-wider text-gray-400">
+                      Member since
+                    </p>
+                    <p className="mt-1 font-semibold text-gray-100">
+                      {user?.createdAt
+                        ? new Date(user.createdAt).toISOString().split("T")[0]
+                        : "—"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <p className="text-xs uppercase tracking-wider text-gray-400">
+                      Username
+                    </p>
+                    <p className="mt-1 font-semibold text-gray-100">
+                      {user?.userName}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-wider text-gray-400">
+                    Bio
+                  </p>
+                  <p className="mt-2 text-gray-200 leading-relaxed whitespace-pre-wrap">
+                    {user?.profile?.bio || "Add a bio to tell other fans what you’re into."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Right: stats */}
+          <aside className="border border-red-900/60 rounded-2xl bg-gradient-to-br from-red-950/40 via-black to-red-950/40 p-6 shadow-[0_0_0_1px_rgba(220,38,38,0.12)]">
+            <h3 className="text-lg font-extrabold text-red-400">
+              Stats
+            </h3>
+            <p className="mt-1 text-sm text-gray-400">
+              Snapshot from your library.
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-4">
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400">Total</p>
+                <p className="mt-2 text-3xl font-extrabold text-red-500">{stats.totalAnime}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400">Completed</p>
+                <p className="mt-2 text-3xl font-extrabold text-red-500">{stats.completed}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400">Watching</p>
+                <p className="mt-2 text-3xl font-extrabold text-red-500">{stats.watching}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400">Episodes</p>
+                <p className="mt-2 text-3xl font-extrabold text-red-500">{stats.totalEpisodesWatched}</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* Account settings */}
+        <section className="mt-6 border border-red-900/60 rounded-2xl bg-gradient-to-br from-red-950/30 via-black to-red-950/30 p-6 shadow-[0_0_0_1px_rgba(220,38,38,0.10)]">
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <h3 className="text-xl font-extrabold">
+                Account <span className="text-red-500">Security</span>
+              </h3>
+              <p className="mt-1 text-sm text-gray-400">
+                Update your password to keep your account safe.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowPasswordform(!showPasswordform)}
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 hover:border-white/20 transition text-sm font-semibold"
+            >
+              {showPasswordform ? "Close" : "Change Password"}
+            </button>
+          </div>
+
           {showPasswordform && (
             <form
               onSubmit={handleChangePassword}
-              className="bg-gray-600 p-2 rounded-xl mt-3"
+              className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              <div className="mt-2">
-                <label className="font-bold mr-1">Current Password:</label>
+              <div>
+                <label className="text-sm font-semibold text-gray-200">
+                  Current password
+                </label>
                 <input
-                 type="password"
-                 value={currentPassword}
-                 onChange={(e) => setCurrentPassword(e.target.value)}
-                 className="bg-black focus:outline-none border rounded-md focus:border-red-500 text-white p-1 w-full"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="mt-2 w-full rounded-xl bg-black/60 border border-red-900/50 px-4 py-3 text-white outline-none focus:border-red-600 focus:ring-2 focus:ring-red-700/25"
                 />
               </div>
 
-              <div className="mt-2">
-                <label className="font-bold ">New Password:</label>
+              <div>
+                <label className="text-sm font-semibold text-gray-200">
+                  New password
+                </label>
                 <input
-                 type="password"
-                 value={newPassword}
-                 onChange={(e) => setNewPassword(e.target.value)}
-                 className="bg-black focus:outline-none border rounded-md focus:border-red-500 text-white p-1 w-full"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-2 w-full rounded-xl bg-black/60 border border-red-900/50 px-4 py-3 text-white outline-none focus:border-red-600 focus:ring-2 focus:ring-red-700/25"
                 />
+                <p className="mt-2 text-xs text-gray-500">
+                  Minimum 8 characters.
+                </p>
               </div>
 
-              <div className="flex justify-center items-center">
+              <div className="md:col-span-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setShowPasswordform(false);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-sm font-semibold"
+                >
+                  Cancel
+                </button>
                 <button
                   type="submit"
-                  className="bg-black text-red-900 mt-2 p-2 rounded-lg"
-                > update Password</button>
+                  disabled={loading}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 transition text-sm font-extrabold text-black disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Updating..." : "Update password"}
+                </button>
               </div>
             </form>
           )}
-        </div>
+        </section>
       </div>
 
+      {/* Edit profile modal */}
+      {edit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-red-900/60 bg-gradient-to-br from-gray-950 via-black to-gray-950 shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-white/10">
+              <h3 className="text-lg font-extrabold text-red-400">Edit profile</h3>
+              <button
+                type="button"
+                onClick={() => setEdit(false)}
+                className="rounded-lg px-3 py-1 text-gray-300 hover:text-white hover:bg-white/10 transition"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateProfile} className="p-5 space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-gray-200">Display name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="mt-2 w-full rounded-xl bg-black/60 border border-red-900/50 px-4 py-3 text-white outline-none focus:border-red-600 focus:ring-2 focus:ring-red-700/25"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-200">Bio</label>
+                <textarea
+                  placeholder="Write your bio..."
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="mt-2 w-full rounded-xl bg-black/60 border border-red-900/50 px-4 py-3 text-white outline-none focus:border-red-600 focus:ring-2 focus:ring-red-700/25 resize-none"
+                  rows={5}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDisplayName(originalDisplayName);
+                    setBio(originalBio);
+                    setEdit(false);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition text-sm font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!isChanged || loading}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 transition text-sm font-extrabold text-black disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Saving..." : "Save changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

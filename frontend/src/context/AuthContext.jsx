@@ -22,6 +22,8 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await api.post("/auth/register", data);
       setUser(res.data.user);
+      // Ensure we have full user document (createdAt, profile defaults, etc.)
+      await checkAuth();
       toast.success("Account created successfully!");
     } catch (error) {
       const errorMessage = error?.error || error?.message || "Registration failed";
@@ -38,6 +40,8 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await api.post("/auth/login", data);
       setUser(res.data.user);
+      // Ensure we have full user document (createdAt, profile defaults, etc.)
+      await checkAuth();
       toast.success("LoggedIn successfully!");
     } catch (error) {
       const errorMessage = error?.error || error?.message || "Login failed";

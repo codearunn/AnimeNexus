@@ -45,16 +45,16 @@ function Footer() {
             </div>
              <div className="flex space-x-6 text-3xl text-red-500 ">
               <span className="hover:text-red-400 transition cursor-pointer">
-                <img src="images/f.png" className="rounded-full h-10 w-10"/>
+                <img src="images/f.png" alt="Facebook" className="rounded-full h-10 w-10"/>
               </span>
               <span className="hover:text-red-400 transition cursor-pointer">
-                <img src="images/insta.png" className="rounded-full h-10 w-10"/>
+                <img src="images/insta.png" alt="Instagram" className="rounded-full h-10 w-10"/>
               </span>
               <span className="hover:text-red-400 transition cursor-pointer">
-                <img src="images/twitter.png" className="rounded-full h-10 w-10"/>
+                <img src="images/twitter.png" alt="Twitter" className="rounded-full h-10 w-10"/>
               </span>
               <span className="hover:text-red-400 transition cursor-pointer">
-                <img src="images/yt.png" className="rounded-full h-10 w-10"/>
+                <img src="images/yt.png" alt="YouTube" className="rounded-full h-10 w-10"/>
               </span>
             </div>
           </div>

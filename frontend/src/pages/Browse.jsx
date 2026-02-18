@@ -38,7 +38,7 @@ function Browse() {
       const data = res.data;
 
       setAnime(data.data);
-      setTotalPages(data.pages);
+      setTotalPages(data.pagination?.last_visible_page || 1);
     } catch (error) {
       console.error("Error in fetchAnime:", error);
       

@@ -50,8 +50,8 @@ userAnimeSchema.index({userId:1, animeId:1}, {unique:true});
 // A field that does NOT exist in database,
 // but appears when you read data.
 userAnimeSchema.virtual("isCompleted").get(function() {
-  if(!this.animeId) return false;
-  return this.currentEpisode>=this.animeId.episodes;
+  if(!this.animeCache?.episodes) return false;
+  return this.currentEpisode >= this.animeCache.episodes;
 });
 
 // Also enable virtuals in JSON: ==> Otherwise frontend won’t see it.

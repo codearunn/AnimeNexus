@@ -80,7 +80,7 @@ function LibraryCard({ anime, onUpdate, showCheckBoxonAllAnimeCards, selected, s
         <Link to={`/anime/${anime.animeId}`}>
           <img
             src={anime.animeCache.poster}
-            alt={anime.animeCache.title.english}
+            alt={anime.animeCache.title || "Anime poster"}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
@@ -99,7 +99,7 @@ function LibraryCard({ anime, onUpdate, showCheckBoxonAllAnimeCards, selected, s
 
         {/* Title */}
         <h3 className="text-white font-bold text-2xl line-clamp-2 border-b border-red-900 group-hover:text-red-500 transition">
-          {anime.animeCache.title.english}
+          {anime.animeCache.title || "Unknown Title"}
         </h3>
 
         {/* Episode info */}

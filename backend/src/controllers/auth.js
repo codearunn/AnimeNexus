@@ -48,6 +48,8 @@ async function handleUserRegistration(req, res, next) {
         id: user._id,
         userName: user.userName,
         email: user.email,
+        createdAt: user.createdAt,
+        profile: user.profile,
       },
       token:token,
     })
@@ -89,6 +91,8 @@ async function handleUserLogin(req, res, next) {
         id: user._id,
         userName: user.userName,
         email: user.email,
+        createdAt: user.createdAt,
+        profile: user.profile,
       },
       token:token,
     })
@@ -171,7 +175,7 @@ const changePassword= async (req, res, next) => {
       return next(new ErrorResponse("Not Authorized", 401));
     }
 
-    const isMatch= user.comparePassword(currentPassword);
+    const isMatch= await user.comparePassword(currentPassword);
     if(!isMatch){
       return next(new ErrorResponse("Current password is incorrect", 401));
     }

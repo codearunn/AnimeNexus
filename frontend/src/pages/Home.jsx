@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import api from "../api/axios";
 import SkeletonCard from "../components/SkeletonCard";
 import AnimeCard from "../components/AnimeCard";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function Home() {
@@ -22,12 +22,12 @@ function Home() {
     try {
       setLoading(true);
 
-      const res= await api.get("/anime/search?limit=10&page=1");
-      setTrendingAnime(res.data.data.slice(0,5)); // take only 5 for homePage
+      const res = await api.get("/anime/search?limit=10&page=1");
+      setTrendingAnime(res.data.data.slice(0, 5)); // take only 5 for homePage
     } catch (error) {
       toast.error("Failed to load trending Animes");
       console.error("Error in fetchTrendingAnime", error);
-    } finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -46,72 +46,47 @@ function Home() {
 
       {/* Call-to-Action Section (Only for non-logged-in users) */}
       {!user && (
-        <section className="max-w-5xl mx-auto px-4 mt-12 mb-16">
-          <div className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-900 border border-gray-800 rounded-3xl p-12 shadow-2xl">
-            {/* Subtle background pattern */}
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600/5 via-transparent to-red-600/5"></div>
-            
-            {/* Content */}
-            <div className="relative z-10">
-              <div className="text-center mb-8">
-                <div className="inline-block mb-4">
-                  <span className="bg-red-600/10 text-red-500 px-4 py-2 rounded-full text-sm font-semibold border border-red-600/20">
-                    Join 10,000+ Anime Fans
-                  </span>
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
-                  Start Your Anime Journey
-                </h2>
-                <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-                  Track your watchlist, discover new series with AI-powered recommendations, 
-                  and connect with a passionate community of anime enthusiasts.
-                </p>
-              </div>
+        <section className="max-w-6xl mx-auto px-6 mt-18 mb-28">
 
-              {/* Features Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 transition-all">
-                  <div className="text-2xl mb-2">🎯</div>
-                  <p className="text-sm text-gray-300">Smart Tracking</p>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 transition-all">
-                  <div className="text-2xl mb-2">🤖</div>
-                  <p className="text-sm text-gray-300">AI Recommendations</p>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center hover:bg-white/10 transition-all">
-                  <div className="text-2xl mb-2">📊</div>
-                  <p className="text-sm text-gray-300">Personal Stats</p>
-                </div>
-              </div>
+          {/* CARD */}
+          <div className="bg-[#0B0B0B] border border-gray-800 rounded-2xl p-14 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
 
-              {/* CTA Buttons */}
-              <div className="flex gap-4 justify-center flex-wrap">
-                <button
-                  onClick={() => navigate('/register')}
-                  className="group relative bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 px-8 py-4 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg shadow-red-600/25 hover:shadow-red-600/40"
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Get Started Free
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                </button>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 hover:border-white/30 px-8 py-4 rounded-xl font-semibold transition-all hover:scale-105"
-                >
-                  Sign In
-                </button>
-              </div>
+            {/* Heading */}
+            <div className="text-center max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-semibold text-white tracking-tight">
+                Start Your Anime Journey
+              </h2>
 
-              {/* Trust Badge */}
-              <div className="text-center mt-6">
-                <p className="text-xs text-gray-500">
-                  No credit card required • Free forever • Cancel anytime
-                </p>
-              </div>
+              <p className="mt-5 text-gray-400 text-lg leading-relaxed">
+                Track your watchlist, discover new series with intelligent recommendations,
+                and explore anime with a smarter experience.
+              </p>
             </div>
+
+            {/* Buttons */}
+            <div className="flex justify-center gap-5 mt-12">
+
+              <button
+                onClick={() => navigate("/register")}
+                className="px-9 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition"
+              >
+                Get Started
+              </button>
+
+              <button
+                onClick={() => navigate("/login")}
+                className="px-9 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition"
+              >
+                Sign In
+              </button>
+
+            </div>
+
+            {/* Footer line */}
+            <div className="mt-12 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+              Free to use • No credit card required
+            </div>
+
           </div>
         </section>
       )}
@@ -121,7 +96,7 @@ function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* Card 1 - Track Anime */}
-          <div 
+          <div
             onClick={() => navigate(user ? '/MyLibrary' : '/login')}
             className="bg-black bg-opacity-50 border border-red-500 rounded-lg p-6 text-center hover:shadow-red-500/50 hover:shadow-lg hover:scale-105 transform transition-transform cursor-pointer"
           >
@@ -136,7 +111,7 @@ function Home() {
           </div>
 
           {/* Card 2 - Discover Series */}
-          <div 
+          <div
             onClick={() => navigate('/Browse')}
             className="bg-black bg-opacity-50 border border-red-500 rounded-lg p-6 text-center hover:shadow-red-500/50 hover:shadow-lg hover:scale-105 transform transition-transform cursor-pointer"
           >
@@ -151,7 +126,7 @@ function Home() {
           </div>
 
           {/* Card 3 - Join Community */}
-          <div 
+          <div
             onClick={() => navigate(user ? '/Profile' : '/register')}
             className="bg-black bg-opacity-50 border border-red-500 rounded-lg p-6 text-center hover:shadow-red-500/50 hover:shadow-lg hover:scale-105 transform transition-transform cursor-pointer"
           >
@@ -176,22 +151,22 @@ function Home() {
             🔥 Trending Now
           </h2>
           <div className="text-center mt-8">
-          <button
-            onClick={() => navigate('/Browse')}
-            className="bg-red-600 hover:bg-red-700 px-4 py-3 rounded-xl font-bold text-black transition-all hover:scale-105"
-          >
-            Browse All Anime →
-          </button>
-        </div>
-      </div>
-
-        {loading ?(
-          <div className="grid grid-cols-5 gap-6">
-            {[...Array(5)].map((_,i) => <SkeletonCard key={i}/>)}
+            <button
+              onClick={() => navigate('/Browse')}
+              className="bg-red-600 hover:bg-red-700 px-4 py-3 rounded-xl font-bold text-black transition-all hover:scale-105"
+            >
+              Browse All Anime →
+            </button>
           </div>
-        ):(
+        </div>
+
+        {loading ? (
           <div className="grid grid-cols-5 gap-6">
-            {trendingAnime.map(anime => <AnimeCard key={anime._id} anime={anime}/>)}
+            {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-5 gap-6">
+            {trendingAnime.map(anime => <AnimeCard key={anime._id} anime={anime} />)}
           </div>
         )}
 
