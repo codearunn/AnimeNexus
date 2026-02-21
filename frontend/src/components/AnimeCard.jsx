@@ -18,15 +18,26 @@ function AnimeCard({ anime }) {
 
   const handleAddToList = async (status) => {
     try {
-      await api.post("/user-anime", {
+      const response = await api.post("/user-anime", {
         animeId: anime._id,
         status: status,
         currentEpisode: 0,
       });
-      toast.success("Added to list!");
+      
+      // Handle both new addition and already exists
+      if (response.data.message === "Already in your list") {
+        toast.success("Already in your list!");
+      } else {
+        toast.success("Added to list!");
+      }
       setOpen(false);
     } catch (error) {
-      toast.error(error?.error || "Already in list");
+      // If it's a 409 conflict, show friendly message
+      if (error.response?.status === 409) {
+        toast.error("Already in your list");
+      } else {
+        toast.error(error?.error || "Failed to add");
+      }
     }
   }
   return (

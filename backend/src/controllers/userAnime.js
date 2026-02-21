@@ -11,11 +11,19 @@ const createUserAnime = async (req, res, next) => {
 
     if (!animeId) throw new ErrorResponse("Anime ID required", 400);
 
+    // Check if already exists
     const exists = await UserAnime.findOne({ userId, animeId });
 
     if (exists) {
-      throw new ErrorResponse("Already in your list", 409); //duplicates
+      // If it exists, return the existing entry instead of error
+      // This handles the case where user tries to add the same anime again
+      return res.status(200).json({
+        status: true,
+        message: "Already in your list",
+        data: exists
+      });
     }
+
     await delay(350);
     const response = await jikan.get(`/anime/${animeId}`);
     const anime = transformAnime(response.data.data);
@@ -36,6 +44,7 @@ const createUserAnime = async (req, res, next) => {
 
     return res.status(201).json({
       status: true,
+      message: "Added to your list",
       data: addAnime
     });
 
@@ -135,9 +144,40 @@ const deleteUserAnime = async (req, res, next) => {
   }
 };
 
+// POST /api/user-anime/cleanup
+// Clean up orphaned entries for current user
+const cleanupUserAnime = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    // Find all user's anime entries
+    const userEntries = await UserAnime.find({ userId });
+
+    let deletedCount = 0;
+
+    // Check each entry and delete if animeId is invalid
+    for (const entry of userEntries) {
+      if (!entry.animeId || !entry.animeCache) {
+        await UserAnime.findByIdAndDelete(entry._id);
+        deletedCount++;
+      }
+    }
+
+    return res.json({
+      status: true,
+      message: `Cleaned up ${deletedCount} orphaned entries`,
+      deletedCount
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createUserAnime,
   getUseranime,
   updateUserAnime,
   deleteUserAnime,
+  cleanupUserAnime,
 };

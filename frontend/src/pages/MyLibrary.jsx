@@ -109,6 +109,25 @@ function MyLibrary() {
 
   const [showCheckBoxonAllAnimeCards, setShowCheckBoxonAllAnimeCards] = useState(false);
   const [selectedAnime, setSelectedAnime] = useState([]);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+
+  const handleCleanup = async () => {
+    try {
+      setCleanupLoading(true);
+      const res = await api.post("/user-anime/cleanup");
+      if (res.data.deletedCount > 0) {
+        toast.success(`Cleaned up ${res.data.deletedCount} orphaned entries`);
+        fetchUserAnime(); // Refresh the list
+      } else {
+        toast.success("No orphaned entries found");
+      }
+    } catch (error) {
+      toast.error("Failed to cleanup");
+      console.error("Error in handleCleanup:", error);
+    } finally {
+      setCleanupLoading(false);
+    }
+  };
 
   const handleBulkStatusChange =async (newStatus) => {
     if(selectedAnime.length ===0){
@@ -185,6 +204,19 @@ function MyLibrary() {
           localStorage.setItem("librarySort", e.target.value);
         }}
       />
+
+      {/* Cleanup Button */}
+      {userAnimeList.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleCleanup}
+            disabled={cleanupLoading}
+            className="text-xs sm:text-sm text-gray-400 hover:text-red-500 underline transition-colors disabled:opacity-50"
+          >
+            {cleanupLoading ? "Cleaning..." : "🧹 Clean up orphaned data"}
+          </button>
+        </div>
+      )}
 
       {/* Empty State */}
       {sortedAnime.length === 0 ? (
