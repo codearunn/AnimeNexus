@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node backend/server.js",
+    "start": "bash start.sh",
     "install-backend": "cd backend && npm install"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
   }
 }
