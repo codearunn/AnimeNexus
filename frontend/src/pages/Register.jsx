@@ -45,12 +45,12 @@ function Register() {
   }
 
   return (
-    <div className="min-h-cal[100vh-10rem] bg-black flex item-center justify-center px-4">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 py-8">
       <form
         onSubmit={handleRegister}
-        className="max-w-md max-auto bg-gray-900 rounded-2xl mt-10 mb-24 shadow-xl p-8"
+        className="w-full max-w-md bg-gray-900 rounded-2xl shadow-xl p-6 sm:p-8"
       >
-        <h1 className="text-3xl font-extrabold text-red-600 mb-8 text-center">Signup to AnimeNexus</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-red-600 mb-6 sm:mb-8 text-center">Signup to AnimeNexus</h1>
 
         {formError && (<p className="text-red-500 mb-3">{formError}</p>)}
         {error && (<p className="text-red-500 mb-3">{error}</p>)}

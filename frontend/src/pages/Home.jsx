@@ -35,47 +35,47 @@ function Home() {
     <div className="min-h-screen text-white bg-gradient-to-br from-black to-red-900">
 
       {/* Hero Section */}
-      <section className="text-center mb-4 py-20">
-        <h1 className="text-6xl font-bold tracking-wide mb-4">
+      <section className="text-center mb-4 py-12 sm:py-16 md:py-20 px-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-wide mb-4">
           Welcome to <span className="text-red-500">Anime<span className="text-white">Nexus</span></span>
         </h1>
-        <p className="text-xl text-red-400">
+        <p className="text-base sm:text-lg md:text-xl text-red-400">
           Track, discover, and connect with the anime world
         </p>
       </section>
 
       {/* Call-to-Action Section (Only for non-logged-in users) */}
       {!user && (
-        <section className="max-w-6xl mx-auto px-6 mt-18 mb-28">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-12 md:mt-18 mb-12 sm:mb-20 md:mb-28">
 
           {/* CARD */}
-          <div className="bg-[#0B0B0B] border border-gray-800 rounded-2xl p-14 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <div className="bg-[#0B0B0B] border border-gray-800 rounded-2xl p-6 sm:p-10 md:p-14 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
 
             {/* Heading */}
             <div className="text-center max-w-2xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-semibold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight">
                 Start Your Anime Journey
               </h2>
 
-              <p className="mt-5 text-gray-400 text-lg leading-relaxed">
+              <p className="mt-3 sm:mt-4 md:mt-5 text-gray-400 text-sm sm:text-base md:text-lg leading-relaxed">
                 Track your watchlist, discover new series with intelligent recommendations,
                 and explore anime with a smarter experience.
               </p>
             </div>
 
             {/* Buttons */}
-            <div className="flex justify-center gap-5 mt-12">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5 mt-8 sm:mt-10 md:mt-12">
 
               <button
                 onClick={() => navigate("/register")}
-                className="px-9 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition"
+                className="px-6 sm:px-9 py-3 rounded-lg bg-red-600 hover:bg-red-500 text-white font-medium transition"
               >
                 Get Started
               </button>
 
               <button
                 onClick={() => navigate("/login")}
-                className="px-9 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition"
+                className="px-6 sm:px-9 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition"
               >
                 Sign In
               </button>
@@ -83,7 +83,7 @@ function Home() {
             </div>
 
             {/* Footer line */}
-            <div className="mt-12 border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
+            <div className="mt-8 sm:mt-10 md:mt-12 border-t border-gray-800 pt-4 sm:pt-6 text-center text-xs sm:text-sm text-gray-500">
               Free to use • No credit card required
             </div>
 
@@ -144,28 +144,26 @@ function Home() {
       </section>
 
       {/* Trending Anime Section */}
-      <section className="max-w-7xl mx-auto px-4 mt-16 pb-5">
+      <section className="max-w-7xl mx-auto px-4 mt-12 sm:mt-16 pb-5">
 
-        <div className="flex justify-between mb-2">
-          <h2 className="text-2xl font-bold text-red-500 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-2 gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-red-500">
             🔥 Trending Now
           </h2>
-          <div className="text-center mt-8">
-            <button
-              onClick={() => navigate('/Browse')}
-              className="bg-red-600 hover:bg-red-700 px-4 py-3 rounded-xl font-bold text-black transition-all hover:scale-105"
-            >
-              Browse All Anime →
-            </button>
-          </div>
+          <button
+            onClick={() => navigate('/Browse')}
+            className="bg-red-600 hover:bg-red-700 px-4 py-2 sm:py-3 rounded-xl font-bold text-black transition-all hover:scale-105 text-sm sm:text-base w-full sm:w-auto"
+          >
+            Browse All Anime →
+          </button>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {[...Array(5)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {trendingAnime.map(anime => <AnimeCard key={anime._id} anime={anime} />)}
           </div>
         )}
