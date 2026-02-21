@@ -38,7 +38,7 @@ async function handleUserRegistration(req, res, next) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production'
     });
     return res.status(201).json({
@@ -81,7 +81,7 @@ async function handleUserLogin(req, res, next) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       secure: process.env.NODE_ENV === 'production'
     });
     return res.status(200).json({
