@@ -21,14 +21,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const res = await api.post("/auth/register", data);
-      setUser(res.data.user);
-      // Ensure we have full user document (createdAt, profile defaults, etc.)
-      await checkAuth();
-      toast.success("Account created successfully!");
+      // Set user immediately from registration response
+      if (res.data.user) {
+        setUser(res.data.user);
+        toast.success("Account created successfully!");
+        return true; // Indicate success
+      }
     } catch (error) {
       const errorMessage = error?.error || error?.message || "Registration failed";
       setError(errorMessage);
       toast.error(errorMessage);
+      return false; // Indicate failure
     } finally {
       setLoading(false);
     }
@@ -39,14 +42,17 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       const res = await api.post("/auth/login", data);
-      setUser(res.data.user);
-      // Ensure we have full user document (createdAt, profile defaults, etc.)
-      await checkAuth();
-      toast.success("LoggedIn successfully!");
+      // Set user immediately from login response
+      if (res.data.user) {
+        setUser(res.data.user);
+        toast.success("LoggedIn successfully!");
+        return true; // Indicate success
+      }
     } catch (error) {
       const errorMessage = error?.error || error?.message || "Login failed";
       setError(errorMessage);
       toast.error(errorMessage);
+      return false; // Indicate failure
     } finally {
       setLoading(false);
     }

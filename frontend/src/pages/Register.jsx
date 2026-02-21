@@ -37,8 +37,11 @@ function Register() {
     }
 
     setFormError("");
-    register({userName, email, password});
-    // Token is stored in httpOnly cookie by backend
+    const success = await register({userName, email, password});
+    // If registration successful, navigate to home
+    if (success) {
+      navigate("/");
+    }
   }
 
   return (
