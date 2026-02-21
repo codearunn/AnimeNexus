@@ -8,7 +8,7 @@ const STATUSES = [
 
 function StatusTab({userAnime, activeTab, setActiveTab}) {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 mb-6 ml-[300px]">
+    <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 mb-4 sm:mb-6 scrollbar-hide">
       {STATUSES.map(status =>{
         const count = userAnime.filter(anime => anime.status === status).length;
 
@@ -18,8 +18,8 @@ function StatusTab({userAnime, activeTab, setActiveTab}) {
           <button
            key={status}
            onClick={() => setActiveTab(status)}
-           className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold
-            transition-all
+           className={`px-3 sm:px-4 py-2 rounded-full whitespace-nowrap text-xs sm:text-sm font-bold
+            transition-all flex-shrink-0
             ${
                 isActive
                   ? "bg-red-600 text-white shadow-lg"

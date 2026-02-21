@@ -165,9 +165,9 @@ function MyLibrary() {
     )
   }
   return (
-    <div className="min-h-screen mx-auto px-4 py-8 bg-black">
+    <div className="min-h-screen mx-auto px-4 py-6 sm:py-8 bg-black">
 
-      <h1 className="text-5xl font-extrabold text-red-700 mb-6 text-center">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-red-700 mb-4 sm:mb-6 text-center">
         {user?.userName || "My"}'s Library
       </h1>
 
@@ -193,41 +193,43 @@ function MyLibrary() {
         <>
           <StatsDashboard stats={stats} />
 
-          <div className='flex'>
+          <div className='flex flex-col sm:flex-row gap-3 sm:gap-0 items-start sm:items-center mb-4'>
             {/* Select Multiple */}
             <button
               onClick={() =>setShowCheckBoxonAllAnimeCards(!showCheckBoxonAllAnimeCards)}
-              className='bg-red-700 font-bold text-sm text-black p-1 rounded-2xl shadow-md hover:shadow-red-900 hover:scale-105'
-            >Select Mutilple</button>
+              className='bg-red-700 font-bold text-xs sm:text-sm text-black px-3 sm:px-4 py-2 rounded-2xl shadow-md hover:shadow-red-900 hover:scale-105 transition-transform w-full sm:w-auto'
+            >
+              {showCheckBoxonAllAnimeCards ? 'Cancel Selection' : 'Select Multiple'}
+            </button>
 
             {/* Action Bar */}
             {showCheckBoxonAllAnimeCards && (
-              <div className='ml-auto'>
+              <div className='flex flex-col sm:flex-row gap-2 sm:gap-0 sm:ml-auto w-full sm:w-auto'>
                 <select
                   onChange={(e) =>handleBulkStatusChange(e.target.value)}
                   defaultValue=""
-                  className='bg-black text-white m-2 cursor-pointer'>
-                <option value=""> Change Status</option>
-                <option value="watching">Watching</option>
-                <option value="completed">Completed</option>
-                <option value="plan-to-watch">Plan To Watch</option>
-                <option value="on-hold">On Hold</option>
-                <option value="dropped">Dropped</option>
-              </select>
+                  className='bg-gray-800 text-white px-3 py-2 rounded-lg cursor-pointer text-sm border border-gray-700 hover:border-red-600 transition-colors w-full sm:w-auto sm:m-2'>
+                  <option value="">Change Status</option>
+                  <option value="watching">Watching</option>
+                  <option value="completed">Completed</option>
+                  <option value="plan-to-watch">Plan To Watch</option>
+                  <option value="on-hold">On Hold</option>
+                  <option value="dropped">Dropped</option>
+                </select>
 
-              <button
-                onClick={handleBulkDelete}
-                className='text-red-700 m-2'
-              >
-                Delete Selected
-              </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className='bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors w-full sm:w-auto sm:m-2'
+                >
+                  Delete Selected ({selectedAnime.length})
+                </button>
               </div>
             )}
           </div>
 
 
           {/* Anime Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 mt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 mt-4 sm:mt-6">
             {sortedAnime.map((anime) => (
               <LibraryCard
               key={anime._id}
