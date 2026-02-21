@@ -8,7 +8,8 @@ const {handleUserRegistration,
        handleUserGetMe,
        handleUserLogout,
        updateProfile,
-       changePassword
+       changePassword,
+       deleteAccount
        } = require("../controllers/auth");
 
 router.post("/register",authLimiter, handleUserRegistration);
@@ -19,6 +20,7 @@ router.get("/me", protect, handleUserGetMe);
 
 router.put("/profile", protect, updateProfile);
 router.put("/password", protect, changePassword);
+router.delete("/account", protect, deleteAccount);
 
 
 

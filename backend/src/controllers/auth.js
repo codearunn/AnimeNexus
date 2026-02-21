@@ -193,11 +193,52 @@ const changePassword= async (req, res, next) => {
   }
 }
 
+const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { password } = req.body;
+
+    if (!password) {
+      return next(new ErrorResponse("Password is required to delete account", 400));
+    }
+
+    // Verify user exists and get password
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      return next(new ErrorResponse("User not found", 404));
+    }
+
+    // Verify password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return next(new ErrorResponse("Incorrect password", 401));
+    }
+
+    // Delete user's anime library first
+    const UserAnime = require("../models/UserAnime");
+    await UserAnime.deleteMany({ userId: userId });
+
+    // Delete user account
+    await User.findByIdAndDelete(userId);
+
+    // Clear cookie
+    res.clearCookie("token");
+
+    return res.status(200).json({
+      status: true,
+      message: "Account deleted successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports ={
   handleUserRegistration,
   handleUserLogin,
   handleUserGetMe,
   handleUserLogout,
   updateProfile,
-  changePassword
+  changePassword,
+  deleteAccount
 }

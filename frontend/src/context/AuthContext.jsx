@@ -73,6 +73,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const deleteAccount = async (password) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await api.delete("/auth/account", { data: { password } });
+      setUser(null);
+      toast.success("Account deleted successfully");
+      return true;
+    } catch (error) {
+      const errorMessage = error?.error || error?.message || "Failed to delete account";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Keeps user logged in after refresh. ==> Persistent login.
   useEffect(() => {
     checkAuth();
@@ -103,7 +121,8 @@ export const AuthProvider = ({ children }) => {
         error,
         register,
         login,
-        logout
+        logout,
+        deleteAccount
       }}
     >
       {/* This is everything wrapped inside AuthProvider. */}
