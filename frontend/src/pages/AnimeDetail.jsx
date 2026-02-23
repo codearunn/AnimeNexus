@@ -57,17 +57,27 @@ export default function AnimeDetail() {
 
   const handleAddToList = async (status) => {
     try {
-      await api.post("/user-anime", {
+      const response = await api.post("/user-anime", {
         animeId: anime._id,
         status,
         currentEpisode: 0
       });
 
-      toast.success("Added to your list!");
+      // Handle both new addition and already exists
+      if (response.data.message === "Already in your list") {
+        toast.success("Already in your list!");
+      } else {
+        toast.success("Added to your list!");
+      }
       setOpen(false);
       fetchAnimeDetails();
-    } catch {
-      toast.error("Already in list or failed");
+    } catch (error) {
+      if (error.response?.status === 409) {
+        toast.error("Already in your list");
+      } else {
+        toast.error("Failed to add to list");
+      }
+      console.error("Error adding to list:", error);
     }
   };
 
@@ -386,23 +396,39 @@ export default function AnimeDetail() {
 
       {/* STATUS MODAL */}
       {open && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-xl w-80 space-y-3">
-            <h3 className="text-xl font-bold mb-4">Select Status</h3>
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4"
+          onClick={() => setOpen(false)}
+        >
+          <div 
+            className="bg-gray-900 p-4 sm:p-6 rounded-xl w-full max-w-sm space-y-2 sm:space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-center">Select Status</h3>
 
             {STATUS_OPTIONS.map(s => (
               <button
                 key={s}
-                onClick={() => handleAddToList(s)}
-                className="w-full bg-gray-800 hover:bg-red-600 py-2 rounded"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddToList(s);
+                }}
+                className="w-full bg-gray-800 hover:bg-red-600 active:bg-red-700 py-3 rounded-lg 
+                           capitalize font-semibold transition touch-manipulation text-sm sm:text-base"
               >
-                {s}
+                {s.replace("-", " ")}
               </button>
             ))}
 
             <button
-              onClick={() => setOpen(false)}
-              className="w-full text-gray-400 mt-3 "
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen(false);
+              }}
+              className="w-full text-gray-400 hover:text-white border border-gray-700 py-3 rounded-lg 
+                         mt-3 sm:mt-4 font-semibold transition touch-manipulation text-sm sm:text-base"
             >
               Cancel
             </button>

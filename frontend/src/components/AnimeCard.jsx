@@ -38,8 +38,19 @@ function AnimeCard({ anime }) {
       } else {
         toast.error(error?.error || "Failed to add");
       }
+      console.error("Error adding to list:", error);
     }
   }
+
+  const handleModalClick = (e) => {
+    // Prevent clicks inside modal from closing it
+    e.stopPropagation();
+  }
+
+  const handleBackdropClick = () => {
+    setOpen(false);
+  }
+
   return (
     <div
       className="group block bg-black rounded-lg overflow-hidden
@@ -95,36 +106,56 @@ function AnimeCard({ anime }) {
         {user && (
           <div className="relative">
             <button
-              onClick={() => setOpen(true)}
-              className="w-full bg-red-800/70 hover:bg-red-700 text-white
-                         py-1 rounded-2xl font-bold transition shadow-md hover:shadow-red-900 "
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen(true);
+              }}
+              className="w-full bg-red-800/70 hover:bg-red-700 active:bg-red-600 text-white
+                         py-2 sm:py-1 rounded-2xl font-bold transition shadow-md hover:shadow-red-900 touch-manipulation"
             >
               Add to List
             </button>
             {/* MODAL */}
             {open && (
-              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-
-                <div className="bg-gray-900 rounded-xl p-6 w-80 border border-gray-700">
-
-                  <h2 className="text-white text-lg font-bold mb-4 text-center">
+              <div 
+                className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4"
+                onClick={handleBackdropClick}
+              >
+                <div 
+                  className="bg-gray-900 rounded-xl p-4 sm:p-6 w-full max-w-sm border border-gray-700 shadow-2xl"
+                  onClick={handleModalClick}
+                >
+                  <h2 className="text-white text-base sm:text-lg font-bold mb-4 text-center">
                     Add to your list
                   </h2>
 
-                  {STATUSES.map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => handleAddToList(status)}
-                      className="w-full mb-2 py-2 bg-gray-800 hover:bg-red-600
-                           text-white rounded transition capitalize"
-                    >
-                      {status.replace("-", " ")}
-                    </button>
-                  ))}
+                  <div className="space-y-2">
+                    {STATUSES.map((status) => (
+                      <button
+                        key={status}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleAddToList(status);
+                        }}
+                        className="w-full py-3 bg-gray-800 hover:bg-red-600 active:bg-red-700
+                             text-white rounded-lg transition capitalize font-semibold text-sm sm:text-base
+                             touch-manipulation"
+                      >
+                        {status.replace("-", " ")}
+                      </button>
+                    ))}
+                  </div>
 
                   <button
-                    onClick={() => setOpen(false)}
-                    className="mt-3 w-full py-2 text-gray-400 hover:text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setOpen(false);
+                    }}
+                    className="mt-4 w-full py-3 text-gray-400 hover:text-white border border-gray-700 
+                               rounded-lg transition font-semibold text-sm sm:text-base touch-manipulation"
                   >
                     Cancel
                   </button>
