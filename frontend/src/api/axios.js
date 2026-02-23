@@ -4,16 +4,10 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
   withCredentials: true, // IMPORTANT for cookies
   headers:{
-    "Content-type":"application/json", // It tells Express how to parse the request body.
+    "Content-type":"application/json",
   },
 });
 
-//“Before ANY request is sent, run this function.”
-// Before login, register, getMe — ANY request:
-// 	1.	Axios pauses
-// 	2.	Looks for token in browser
-// 	3.	If found → attaches it
-// 	4.	Then sends request
 api.interceptors.request.use(
   (config) =>{
     const token = localStorage.getItem("token");
@@ -22,37 +16,36 @@ api.interceptors.request.use(
       config.headers.Authorization= `Bearer ${token}`;
     }
 
+    // Log request for debugging
+    console.log("API Request:", config.method?.toUpperCase(), config.url, "withCredentials:", config.withCredentials);
+
     return config;
   },
-  (error) => Promise.reject(error) //“This request failed. Go to .catch().”
+  (error) => Promise.reject(error)
 );
 
-// “After ANY response comes back, run this.”
-// If error:
-// 	1.	Axios pauses
-// 	2.	Checks status code
-// 	3.	If 401 → user not logged in
-// 	4.	Sends clean error to frontend
 api.interceptors.response.use(
-  (response) => response, //Just pass response normally.
+  (response) => response,
   (error) =>{
-    if(error.response){ // Backend DID respond. If false → internet down / server unreachable.
+    if(error.response){
       const status = error.response.status;
 
+      console.log("API Error:", status, error.response.data);
+
       if(status === 401){
-        console.log("Unauthorized");
+        console.log("Unauthorized - Please login");
       }
       if (status === 500) {
         console.log("Server error");
       }
 
-      // A Promise has two paths:  ✅ resolve → success && ❌ reject → failure
-      return Promise.reject(error.response.data); //“This request failed. Go to .catch().”
+      return Promise.reject(error.response.data);
     }
 
+    console.error("Network error:", error.message);
     return Promise.reject({
       status:false,
-      error:"Netwok error"
+      error:"Network error"
     })
   }
 );

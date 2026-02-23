@@ -18,11 +18,15 @@ function AnimeCard({ anime }) {
 
   const handleAddToList = async (status) => {
     try {
+      console.log("Adding anime to list:", { animeId: anime._id, status });
+      
       const response = await api.post("/user-anime", {
         animeId: anime._id,
         status: status,
         currentEpisode: 0,
       });
+      
+      console.log("Add to list response:", response.data);
       
       // Handle both new addition and already exists
       if (response.data.message === "Already in your list") {
@@ -32,13 +36,20 @@ function AnimeCard({ anime }) {
       }
       setOpen(false);
     } catch (error) {
+      console.error("Full error object:", error);
+      console.error("Error response:", error.response);
+      console.error("Error message:", error.message);
+      
       // If it's a 409 conflict, show friendly message
       if (error.response?.status === 409) {
         toast.error("Already in your list");
+      } else if (error.response?.status === 401) {
+        toast.error("Please login again");
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
       } else {
-        toast.error(error?.error || "Failed to add");
+        toast.error(error?.message || "Failed to add");
       }
-      console.error("Error adding to list:", error);
     }
   }
 
