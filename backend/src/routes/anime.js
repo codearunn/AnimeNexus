@@ -5,7 +5,7 @@ const {getAllAnime,
        searchAnime,
        getAllGenres,
        getAnimeDetails} = require("../controllers/anime");
-const protect = require("../middleware/auth");
+const { optionalProtect } = require("../middleware/auth");
 
 
 router.get("/", getAllAnime);
@@ -14,6 +14,7 @@ router.get("/genres", getAllGenres);
 
 // Dynamic routes LAST
 router.get("/:id", getAnimeById);
-router.get("/:id/details", protect, getAnimeDetails);
+// optionalProtect: logged-in users get userStats, guests see community stats only
+router.get("/:id/details", optionalProtect, getAnimeDetails);
 
 module.exports= router;

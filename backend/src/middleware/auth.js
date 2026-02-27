@@ -54,3 +54,28 @@ const isAdmin = (req, res, next) => {
 module.exports = protect;
 module.exports.protect = protect;
 module.exports.isAdmin = isAdmin;
+
+// Reads + validates the token if present, but NEVER blocks the request.
+// Use on routes that should work for both guests and logged-in users.
+const optionalProtect = async (req, res, next) => {
+  let token;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  }
+  if (!token && req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+
+  if (!token) return next(); // Guest \u2014 no token, just continue
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select("-password");
+  } catch {
+    // Invalid/expired token \u2014 treat as guest, don't block
+  }
+  next();
+};
+
+module.exports.optionalProtect = optionalProtect;

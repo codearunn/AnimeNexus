@@ -14,6 +14,7 @@ const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
 const transformAnime = (anime) => ({
   _id: anime.mal_id,
+  malId: anime.mal_id,  // explicit numeric Jikan ID — used by frontend for animeId
 
   title: {
     english: anime.title_english || anime.title,
