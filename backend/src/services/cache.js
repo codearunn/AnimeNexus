@@ -139,6 +139,11 @@ const cache = new Cache(); // You export the INSTANCE, not the class.
 
 // #6 Store the interval handle so it can be cleared during graceful shutdown / test teardown
 cache.cleanupInterval = setInterval(() => cache.cleanup(), 300000);
+
+// Clear the interval on graceful shutdown (SIGTERM from Railway/Docker, SIGINT from Ctrl+C)
+process.on('SIGTERM', () => clearInterval(cache.cleanupInterval));
+process.on('SIGINT', () => clearInterval(cache.cleanupInterval));
+
 // 300000 / 1000 = 300 seconds
 // 300 / 60 = 5 minutes
 // Why 5 minutes?

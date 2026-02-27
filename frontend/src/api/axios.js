@@ -22,26 +22,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) =>{
     if(error.response){
-      const status = error.response.status;
-
-      console.log("API Error:", status, error.response.data);
-
-      if(status === 401){
-        console.log("Unauthorized - Please login");
-      }
-      if (status === 500) {
-        console.log("Server error");
-      }
-
       return Promise.reject(error.response.data);
     }
 
-    console.error("Network error:", error.message);
     return Promise.reject({
       status:false,
       error:"Network error"
     })
   }
 );
+
 
 export default api;
