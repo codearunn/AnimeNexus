@@ -83,16 +83,22 @@ export default function AnimeDetail() {
   };
 
   const generateSummary = async () => {
-    if (!anime?.title?.english || !anime?.synopsis) {
+    // #4 Catch null/short synopsis before hitting the AI — give a clear message
+    if (!anime?.synopsis || anime.synopsis.trim().length < 50) {
+      toast.error("This anime doesn't have enough synopsis data for AI analysis.");
+      return;
+    }
+    if (!anime?.title?.english) {
       toast.error("Anime data incomplete");
       return;
     }
 
+    // #1 Set loading OUTSIDE the inner retry fn — finally would kill it mid-retry
+    setSummaryLoading(true);
+    setSummaryError("");
+
     const attemptGenerate = async (retryCount = 0) => {
       try {
-        setSummaryLoading(true);
-        setSummaryError("");
-
         const res = await api.post("/ai/summary", {
           title: anime.title.english,
           synopsis: anime.synopsis,
@@ -101,7 +107,6 @@ export default function AnimeDetail() {
 
         setAisummary(res.data.summary);
 
-        // Show cache hit notification
         if (res.data.cached) {
           toast.success("⚡ Loaded from cache (instant!)", {
             duration: 2000,
@@ -110,29 +115,34 @@ export default function AnimeDetail() {
         }
 
       } catch (error) {
-        // Retry once if first attempt fails
         if (retryCount === 0) {
           toast("Retrying...", { duration: 1000 });
           await new Promise(resolve => setTimeout(resolve, 1000));
-          return attemptGenerate(1);
+          return attemptGenerate(1); // loading stays true throughout retry
         }
-
         setSummaryError("Failed to generate AI summary");
         toast.error("Failed after 2 attempts. Try again later.");
-      } finally {
-        setSummaryLoading(false);
       }
+      // No finally — loading cleared only after retry chain completes
     };
 
     await attemptGenerate();
+    setSummaryLoading(false); // runs once, after both attempts
   };
 
   const findSimilar = async () => {
+    // #4 Same synopsis guard — AI can't work without enough context
+    if (!anime?.synopsis || anime.synopsis.trim().length < 50) {
+      toast.error("This anime doesn't have enough synopsis data for AI analysis.");
+      return;
+    }
+
+    // #1 Set loading OUTSIDE the inner retry fn — finally fires mid-retry
+    setSimilarLoading(true);
+    setSimilarError("");
+
     const attemptFind = async (retryCount = 0) => {
       try {
-        setSimilarLoading(true);
-        setSimilarError("");
-
         const res = await api.post("/ai/similar", {
           title: anime.title.english,
           synopsis: anime.synopsis,
@@ -141,7 +151,6 @@ export default function AnimeDetail() {
 
         setSimilarAnime(res.data.similarAnimes);
 
-        // Show cache hit notification
         if (res.data.cached) {
           toast.success("⚡ Loaded from cache!", {
             duration: 2000,
@@ -150,23 +159,19 @@ export default function AnimeDetail() {
         }
 
       } catch (error) {
-        // Retry once if first attempt fails
         if (retryCount === 0) {
           toast("Retrying...", { duration: 1000 });
           await new Promise(resolve => setTimeout(resolve, 1000));
-          return attemptFind(1);
+          return attemptFind(1); // loading stays true throughout retry
         }
-
-        // Failed after retry
         setSimilarError("Failed to find similar Animes");
         toast.error("Failed after 2 attempts. Try again later.");
-        console.log("Error in findSimilar", error);
-      } finally {
-        setSimilarLoading(false);
       }
+      // No finally — loading cleared only after retry chain completes
     };
 
     await attemptFind();
+    setSimilarLoading(false); // runs once, after both attempts
   }
 
   if (loading) {
@@ -295,40 +300,38 @@ export default function AnimeDetail() {
             <span>🏢 {anime.studio}</span>
           </div>
 
-          {/* ACTION BUTTON */}
+          {/* ACTION BUTTON — requires login to write to library */}
           {user && (
-            <>
-              <button
-                onClick={() => setOpen(true)}
-                className="bg-red-600 hover:bg-red-700 px-8 py-3 rounded-xl font-bold shadow-lg mb-5"
-              >
-                {stats.userStats ? "Update Status" : "Add to My List"}
-              </button>
-
-              {/* Similar button */}
-              <button
-                onClick={findSimilar}
-                disabled={similarLoading}
-                className={`bg-black hover:bg-gray-900 p-3 rounded-xl font-bold shadow-lg mb-5 ml-[300px] text-xl transition-all flex items-center ${
-                  similarLoading
-                    ? 'text-gray-500 cursor-not-allowed opacity-60'
-                    : 'text-red-600 hover:scale-105'
-                }`}
-              >
-                {similarLoading ? (
-                  <>
-                    <span className="animate-spin mr-2 text-2xl">🔄</span>
-                    <span>Finding Similar Anime...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-yellow-500 mr-2">↓↓↓↓</span>
-                    <span>Find Similar Animes</span>
-                  </>
-                )}
-              </button>
-            </>
+            <button
+              onClick={() => setOpen(true)}
+              className="bg-red-600 hover:bg-red-700 px-8 py-3 rounded-xl font-bold shadow-lg mb-5"
+            >
+              {stats.userStats ? "Update Status" : "Add to My List"}
+            </button>
           )}
+
+          {/* Find Similar — available to everyone, consistent with Summarize button */}
+          <button
+            onClick={findSimilar}
+            disabled={similarLoading}
+            className={`bg-black hover:bg-gray-900 p-3 rounded-xl font-bold shadow-lg mb-5 ml-[300px] text-xl transition-all flex items-center ${
+              similarLoading
+                ? 'text-gray-500 cursor-not-allowed opacity-60'
+                : 'text-red-600 hover:scale-105'
+            }`}
+          >
+            {similarLoading ? (
+              <>
+                <span className="animate-spin mr-2 text-2xl">🔄</span>
+                <span>Finding Similar Anime...</span>
+              </>
+            ) : (
+              <>
+                <span className="text-yellow-500 mr-2">↓↓↓↓</span>
+                <span>Find Similar Animes</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* RIGHT COMMUNITY GLASS */}

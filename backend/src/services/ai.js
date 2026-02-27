@@ -4,20 +4,24 @@ const ErrorResponse = require("../utils/errorResponse");
 
 // Helper function for better error messages
 const getErrorMessage = (error) => {
+  // OpenAI SDK wraps errors as APIError — status is at error.status, not error.response?.status
+  const status = error.status ?? error.response?.status;
+
   if (error.code === 'ECONNREFUSED') {
     return 'AI service unavailable. Please try again later.';
   }
-  if (error.response?.status === 429) {
+  if (status === 429) {
     return 'Rate limit exceeded. Please wait a moment.';
   }
-  if (error.response?.status === 401) {
+  if (status === 401) {
     return 'AI API key invalid. Please contact support.';
   }
-  if (error.response?.status === 503) {
+  if (status === 503) {
     return 'AI service temporarily unavailable. Please try again.';
   }
   return 'AI request failed. Please try again.';
 };
+
 
 // Creates a new AI client instance
 const openai = new openAI({
