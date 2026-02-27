@@ -25,30 +25,6 @@ const openai = new openAI({
   baseURL:'https://openrouter.ai/api/v1',
 });
 
-const testAIConnection = async () => {
-  try {
-    console.log("Testing AI connection...");
-
-    const response = await openai.chat.completions.create({
-      model: 'mistralai/mistral-7b-instruct',
-      messages: [ // AI sees this as the conversation history
-        {
-          role: 'user', //message from you (not AI)
-          content: 'Recommend 3 popular anime titles with brief descriptions.'
-        }
-      ],
-    });
-
-    const aiMessage = response.choices[0].message.content;
-    // response.choices array of possible responses
-    // [0] = first (and usually only) response
-    // .message.content = the actual text
-    return aiMessage;
-
-  } catch (error) {
-    console.error("AI connection failed:", error.message);
-  }
-};
 
 const generateSummary = async (title, synopsis, genres) => {
   try {
@@ -154,15 +130,17 @@ const findSimilarAnime = async (title, synopsis, genres) => {
     // Clean special Unicode characters that break JSON
     text = text
       .replace(/−/g, "-")           // Replace minus sign with dash
-      .replace(/"/g, '"')           // Replace smart quotes
-      .replace(/"/g, '"')
-      .replace(/'/g, "'")           // Replace curly apostrophes
-      .replace(/'/g, "'")
-      .replace(/…/g, "...")         // Replace ellipsis
-      .replace(/—/g, "-")           // Replace em dash
-      .replace(/–/g, "-");          // Replace en dash
+      .replace(/\u201c/g, '"')      // Replace smart quotes
+      .replace(/\u201d/g, '"')
+      .replace(/\u2018/g, "'")
+      .replace(/\u2019/g, "'")
+      .replace(/\u2026/g, "...")    // Replace ellipsis
+      .replace(/\u2014/g, "-")      // Replace em dash
+      .replace(/\u2013/g, "-");     // Replace en dash
 
-    console.log("🧹 After cleaning:", text.substring(0, 100) + "...");
+    if(process.env.NODE_ENV !== 'production') {
+      console.log("After cleaning:", text.substring(0, 100) + "...");
+    }
 
     // Try to extract JSON if there's extra text
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -180,12 +158,16 @@ const findSimilarAnime = async (title, synopsis, genres) => {
     }
 
     if (!parsed.recommendations || !Array.isArray(parsed.recommendations)) {
-      console.error("❌ Invalid format - missing recommendations array");
-      console.error("❌ Parsed object:", parsed);
+      if(process.env.NODE_ENV !== 'production') {
+        console.error("Invalid format - missing recommendations array");
+        console.error("Parsed object:", parsed);
+      }
       throw new ErrorResponse("Invalid AI response format", 500);
     }
 
-    console.log("✅ Returning", parsed.recommendations.length, "recommendations");
+    if(process.env.NODE_ENV !== 'production') {
+      console.log("Returning", parsed.recommendations.length, "recommendations");
+    }
     return parsed.recommendations;
   } catch (error) {
     console.error("❌ Error in findSimilarAnime:", error.message);
@@ -198,7 +180,6 @@ const findSimilarAnime = async (title, synopsis, genres) => {
 }
 module.exports = {
   openai,
-  testAIConnection,
   generateSummary,
   findSimilarAnime
 };

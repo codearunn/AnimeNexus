@@ -38,8 +38,10 @@ const createUserAnime = async (req, res, next) => {
         title: anime.title.english,
         poster: anime.images.poster,
         episodes: anime.episodes,
+        genres: anime.genres || [],   // #7 stored for MyLibrary genre stats
         updatedAt: new Date()
       }
+
     });
 
     return res.status(201).json({
@@ -105,9 +107,17 @@ const updateUserAnime = async (req, res, next) => {
       throw new ErrorResponse("Rating must be between 0 and 10", 400);
     }
 
+    // #5 Whitelist safe fields — never pass raw req.body to findByIdAndUpdate
+    const { status, currentEpisode, rating, notes } = req.body;
+    const safeUpdates = {};
+    if (status !== undefined) safeUpdates.status = status;
+    if (currentEpisode !== undefined) safeUpdates.currentEpisode = currentEpisode;
+    if (rating !== undefined) safeUpdates.rating = rating;
+    if (notes !== undefined) safeUpdates.notes = notes;
+
     const updated = await UserAnime.findByIdAndUpdate(
       entryId,
-      updates,
+      safeUpdates,
       { new: true } // without this mongo will return old entry
     );
 

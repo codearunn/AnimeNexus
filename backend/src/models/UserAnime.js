@@ -14,6 +14,7 @@ const userAnimeSchema = new mongoose.Schema({
     title: String,
     poster: String,
     episodes: Number,
+    genres: [String],
     updatedAt: Date
   },
   status:{

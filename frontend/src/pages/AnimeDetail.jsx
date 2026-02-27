@@ -37,10 +37,10 @@ export default function AnimeDetail() {
   const [similarError, setSimilarError] = useState("");
 
 
+  // #4 Include `id` as a dependency so the effect re-runs when navigating between anime pages
   useEffect(() => {
     fetchAnimeDetails();
-    // eslint-disable-next-line
-  }, []);
+  }, [id]);
 
   const fetchAnimeDetails = async () => {
     try {
@@ -57,8 +57,9 @@ export default function AnimeDetail() {
 
   const handleAddToList = async (status) => {
     try {
+      // #1 Use anime.malId (numeric Jikan ID), NOT anime._id (MongoDB ObjectId)
       const response = await api.post("/user-anime", {
-        animeId: anime._id,
+        animeId: anime.malId,
         status,
         currentEpisode: 0
       });

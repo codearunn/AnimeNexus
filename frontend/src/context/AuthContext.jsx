@@ -13,8 +13,11 @@ const AuthContext = createContext(); //Creates shared memory for auth.
 export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  // #25 Start as true so App shows <Loading/> until checkAuth completes \u2014
+  // prevents briefly flashing the logged-out UI to an authenticated user
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   const register = async (data) => { // data is  the form values coming from your Register page.
     try {

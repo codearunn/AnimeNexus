@@ -32,10 +32,13 @@ function MyLibrary() {
     const completedAnime = userAnimeList.filter(anime => anime.status ==="completed").length;
     const completionRate = totalAnime===0?0: Math.round((completedAnime/totalAnime)*100);
 
+    // #7 animeId is a raw Number (Jikan ID), NOT a populated object.
+    // Use animeCache.genres which is stored at creation time in the backend.
     const flatternAllGeners = userAnimeList
-      .filter(anime => anime.animeId)  // Filter out null animeId to prevent crashes
-      .map(anime => anime.animeId.genres)
+      .filter(anime => anime.animeCache && anime.animeCache.genres)
+      .map(anime => anime.animeCache.genres)
       .flat();
+
     const countGenres= {};
     flatternAllGeners.forEach(genre => {
       countGenres[genre]= (countGenres[genre]||0)+1;

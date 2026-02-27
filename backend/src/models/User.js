@@ -35,11 +35,17 @@ const userSchema= new mongoose.Schema({
       default:"/images/defaultPFP.jpg",
     },
   },
+  // #11 Required by isAdmin middleware in middleware/auth.js
+  // Only set via direct DB update — never expose in any API endpoint
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 }, {timestamps:true});
 
-//To optimize query performance and enforce uniqueness on frequently searched fields like email and username.
-// userSchema.index({userName: 1});
-// userSchema.index({email: 1});
+// #17 Enable indexes for frequent findOne() lookups during login and registration
+userSchema.index({userName: 1});
+userSchema.index({email: 1});
 
 // Hash password before save
 userSchema.pre("save", async function(){

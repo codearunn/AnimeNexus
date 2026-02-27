@@ -10,19 +10,13 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) =>{
-    const token = localStorage.getItem("token");
-
-    if(token){
-      config.headers.Authorization= `Bearer ${token}`;
-    }
-
-    // Log request for debugging
-    console.log("API Request:", config.method?.toUpperCase(), config.url, "withCredentials:", config.withCredentials);
-
+    // #3 Auth is cookie-only (withCredentials: true above).
+    // Removed: localStorage.getItem("token") + Authorization header \u2014 token is never stored in localStorage.
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 api.interceptors.response.use(
   (response) => response,

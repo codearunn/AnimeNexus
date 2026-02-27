@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const generateToken= require("../utils/generateToken");
 const ErrorResponse = require("../utils/errorResponse");
@@ -12,8 +13,14 @@ async function handleUserRegistration(req, res, next) {
     if(userName.length<3 || userName.length>20){
       throw new ErrorResponse("Username must be between 3-20 characters", 400);
     }
-    if(password.length<6){
-      throw new ErrorResponse("Password must be at least 6 characters long", 400);
+    // #8 Validate format BEFORE hitting the DB
+    const emailRegEx = /^\S+@\S+\.\S+$/;
+    if(!emailRegEx.test(email)){
+      throw new ErrorResponse("Invalid email format", 400);
+    }
+    // #2 Match model's minlength: 8
+    if(password.length<8){
+      throw new ErrorResponse("Password must be at least 8 characters long", 400);
     }
     const existingUserName = await User.findOne({userName});
     if(existingUserName){
@@ -22,10 +29,6 @@ async function handleUserRegistration(req, res, next) {
     const existingUserEmail = await User.findOne({email});
     if(existingUserEmail){
       throw new ErrorResponse("Email is already registered", 409);
-    }
-    const emailRegEx = /^\S+@\S+\.\S+$/;
-    if(!emailRegEx.test(email)){
-      throw new ErrorResponse("Invalid email format", 400);
     }
 
     const user = await User.create({
@@ -36,11 +39,14 @@ async function handleUserRegistration(req, res, next) {
 
     const token = generateToken(user._id);
 
+    // #14 Add maxAge so cookie survives browser restarts (matches JWT 7d expiry)
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    // #3 Token is in httpOnly cookie — do NOT expose it in the response body
     return res.status(201).json({
       status:true,
       message:"User registered successfully",
@@ -51,7 +57,6 @@ async function handleUserRegistration(req, res, next) {
         createdAt: user.createdAt,
         profile: user.profile,
       },
-      token:token,
     })
   } catch (error) {
     next(error);
@@ -79,11 +84,14 @@ async function handleUserLogin(req, res, next) {
     const token = generateToken(user._id);
 
 
+    // #14 Add maxAge so cookie survives browser restarts (matches JWT 7d expiry)
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    // #3 Token is in httpOnly cookie — do NOT expose it in the response body
     return res.status(200).json({
       status:true,
       message:"User LoggedIn successfully",
@@ -94,7 +102,6 @@ async function handleUserLogin(req, res, next) {
         createdAt: user.createdAt,
         profile: user.profile,
       },
-      token:token,
     })
   } catch (error) {
     next(error);
@@ -194,6 +201,7 @@ const changePassword= async (req, res, next) => {
 }
 
 const deleteAccount = async (req, res, next) => {
+  const session = await mongoose.startSession();
   try {
     const userId = req.user._id;
     const { password } = req.body;
@@ -214,12 +222,14 @@ const deleteAccount = async (req, res, next) => {
       return next(new ErrorResponse("Incorrect password", 401));
     }
 
-    // Delete user's anime library first
+    // #23 Wrap both deletes in a transaction — if either fails, neither is committed
     const UserAnime = require("../models/UserAnime");
-    await UserAnime.deleteMany({ userId: userId });
+    session.startTransaction();
 
-    // Delete user account
-    await User.findByIdAndDelete(userId);
+    await UserAnime.deleteMany({ userId: userId }, { session });
+    await User.findByIdAndDelete(userId, { session });
+
+    await session.commitTransaction();
 
     // Clear cookie
     res.clearCookie("token");
@@ -229,7 +239,10 @@ const deleteAccount = async (req, res, next) => {
       message: "Account deleted successfully"
     });
   } catch (error) {
+    await session.abortTransaction();
     next(error);
+  } finally {
+    session.endSession();
   }
 }
 

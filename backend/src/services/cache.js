@@ -55,21 +55,21 @@ class Cache{
   }
 
   get(key){
-    const data = this.store.get(key); //We fetch value from Map.
+    const data = this.store.get(key);
 
-    // “Cache miss”
+    // "Cache miss"
     if(!data) {
       this.misses++;
-      console.log("Cache miss:", key);
+      if(process.env.NODE_ENV !== 'production') console.log("Cache miss:", key);
       return null;
     }
 
     // EXPIRED
-    if(Date.now() > data.expiresAt){ // Current time > expiration time ? If yes → expired.
+    if(Date.now() > data.expiresAt){
       this.store.delete(key);
       this.misses++;
-      console.log("Cache expired:", key);
-      return null; // Because expired data = treated as not existing.
+      if(process.env.NODE_ENV !== 'production') console.log("Cache expired:", key);
+      return null;
     }
     // Why delete immediately?
     // So expired data doesn’t stay in memory.
@@ -77,7 +77,7 @@ class Cache{
 
     //hit
     this.hits++;
-    console.log("Cache hit:", key);
+    if(process.env.NODE_ENV !== 'production') console.log("Cache hit:", key);
     return data.value;
   }
 
@@ -137,7 +137,8 @@ class Cache{
 // Creates single cache instance.
 const cache = new Cache(); // You export the INSTANCE, not the class.
 
-setInterval(() => cache.cleanup(), 300000); // Runs cleanup automatically every 5 minutes.
+// #6 Store the interval handle so it can be cleared during graceful shutdown / test teardown
+cache.cleanupInterval = setInterval(() => cache.cleanup(), 300000);
 // 300000 / 1000 = 300 seconds
 // 300 / 60 = 5 minutes
 // Why 5 minutes?
