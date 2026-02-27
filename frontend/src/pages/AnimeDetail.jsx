@@ -93,7 +93,7 @@ export default function AnimeDetail() {
         setSummaryLoading(true);
         setSummaryError("");
 
-        const res = await api.post("ai/summary", {
+        const res = await api.post("/ai/summary", {
           title: anime.title.english,
           synopsis: anime.synopsis,
           genres: anime.genres,
@@ -117,10 +117,8 @@ export default function AnimeDetail() {
           return attemptGenerate(1);
         }
 
-        // Failed after retry
         setSummaryError("Failed to generate AI summary");
         toast.error("Failed after 2 attempts. Try again later.");
-        console.log("Error in generateSummary", error);
       } finally {
         setSummaryLoading(false);
       }
