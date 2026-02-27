@@ -112,7 +112,7 @@ export default function AnimeDetail() {
       } catch (error) {
         // Retry once if first attempt fails
         if (retryCount === 0) {
-          toast.info("Retrying...", { duration: 1000 });
+          toast("Retrying...", { duration: 1000 });
           await new Promise(resolve => setTimeout(resolve, 1000));
           return attemptGenerate(1);
         }
@@ -154,7 +154,7 @@ export default function AnimeDetail() {
       } catch (error) {
         // Retry once if first attempt fails
         if (retryCount === 0) {
-          toast.info("Retrying...", { duration: 1000 });
+          toast("Retrying...", { duration: 1000 });
           await new Promise(resolve => setTimeout(resolve, 1000));
           return attemptFind(1);
         }
