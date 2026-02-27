@@ -2,18 +2,26 @@ require("dotenv").config();
 const openAI = require("openai");
 const ErrorResponse = require("../utils/errorResponse");
 
+// Fail fast — same pattern as JWT_SECRET guard
+if (!process.env.OPENROUTER_API_KEY) {
+  throw new Error("OPENROUTER_API_KEY environment variable is not set! Add it to your Render environment variables.");
+}
+
 // Helper function for better error messages
 const getErrorMessage = (error) => {
   // OpenAI SDK wraps errors as APIError — status is at error.status, not error.response?.status
   const status = error.status ?? error.response?.status;
 
-  if (error.code === 'ECONNREFUSED') {
+  // Always log the real error in production so Render logs show the cause
+  console.error("[AI Error] type:", error.constructor?.name, "| status:", status, "| message:", error.message);
+
+  if (error.code === 'ECONNREFUSED' || error.constructor?.name === 'APIConnectionError') {
     return 'AI service unavailable. Please try again later.';
   }
   if (status === 429) {
     return 'Rate limit exceeded. Please wait a moment.';
   }
-  if (status === 401) {
+  if (status === 401 || error.constructor?.name === 'AuthenticationError') {
     return 'AI API key invalid. Please contact support.';
   }
   if (status === 503) {
@@ -21,7 +29,6 @@ const getErrorMessage = (error) => {
   }
   return 'AI request failed. Please try again.';
 };
-
 
 // Creates a new AI client instance
 const openai = new openAI({
